@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      if (["localhost", "0.0.0.0", "::1"].includes(window.location.hostname)) {
+        const canonicalUrl = new URL(window.location.href);
+        canonicalUrl.hostname = "127.0.0.1";
+        window.location.replace(canonicalUrl.toString());
+      }
+    </script>
+    <title>Lab Demo | WebShield Lab</title>
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260404d" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Controlled Demo</p>
+          <h1>Vulnerable Lab Routes</h1>
+        </div>
+        <nav class="nav">
+          <a href="index.html">Overview</a>
+          <a href="dashboard.html">Dashboard</a>
+          <a id="adminLink" class="hidden" href="admin.html">Admin</a>
+          <a id="auditLink" class="hidden" href="audit.html">Audit</a>
+        </nav>
+      </header>
+
+      <main class="grid">
+        <section class="panel full-span">
+          <p class="eyebrow">Warning</p>
+          <h2>Use only in a local and isolated environment</h2>
+          <p class="muted-copy">
+            These demo routes exist only to support the dissertation's
+            before-versus-after testing. Keep `LAB_MODE=demo` restricted to your
+            own machine.
+          </p>
+          <p id="modeMessage" class="status-text"></p>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">Reflected Preview</p>
+          <h2>Unsafe HTML rendering</h2>
+          <form id="reflectedForm" class="stacked-form">
+            <label>
+              Demo input
+              <textarea id="content" name="content" rows="5" required></textarea>
+            </label>
+            <button type="submit">Render Preview</button>
+          </form>
+          <p id="reflectedStatus" class="status-text"></p>
+          <div id="reflectedPreview" class="entry-card lab-preview"></div>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">IDOR Demo</p>
+          <h2>Public feedback lookup</h2>
+          <form id="lookupForm" class="stacked-form">
+            <label>
+              Feedback ID
+              <input id="feedbackId" name="feedbackId" type="number" min="1" required />
+            </label>
+            <button type="submit">Fetch Feedback</button>
+          </form>
+          <p id="lookupStatus" class="status-text"></p>
+          <div id="lookupResult" class="entry-list"></div>
+        </section>
+
+        <section class="panel full-span">
+          <p class="eyebrow">Injection Demo</p>
+          <h2>Unsafe SQL search</h2>
+          <form id="searchForm" class="stacked-form">
+            <label>
+              Title search
+              <input id="title" name="title" type="text" required />
+            </label>
+            <button type="submit">Run Insecure Search</button>
+          </form>
+          <p id="searchStatus" class="status-text"></p>
+          <div id="searchResult" class="entry-list"></div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="assets/js/lab.js?v=20260404f"></script>
+  </body>
+</html>
