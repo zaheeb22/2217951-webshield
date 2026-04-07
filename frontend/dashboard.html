@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      if (["localhost", "0.0.0.0", "::1"].includes(window.location.hostname)) {
+        const canonicalUrl = new URL(window.location.href);
+        canonicalUrl.hostname = "127.0.0.1";
+        window.location.replace(canonicalUrl.toString());
+      }
+    </script>
+    <title>User Dashboard | WebShield Lab</title>
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260404d" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Frontend Page</p>
+          <h1>User Dashboard</h1>
+        </div>
+        <nav class="nav">
+          <a href="index.html">Overview</a>
+          <a id="adminLink" class="hidden" href="admin.html">Admin</a>
+          <a id="auditLink" class="hidden" href="audit.html">Audit</a>
+          <a href="lab.html">Lab Demo</a>
+          <button id="logoutButton" class="ghost-button" type="button">Logout</button>
+        </nav>
+      </header>
+
+      <main class="grid">
+        <section class="panel">
+          <p class="eyebrow">Session</p>
+          <h2>Current user</h2>
+          <div id="userDetails" class="info-grid"></div>
+          <p id="dashboardMessage" class="status-text"></p>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">Feedback Form</p>
+          <h2>Submit feedback</h2>
+          <form id="feedbackForm" class="stacked-form">
+            <label>
+              Title
+              <input id="title" name="title" type="text" maxlength="150" required />
+            </label>
+            <label>
+              Message
+              <textarea id="message" name="message" rows="6" required></textarea>
+            </label>
+            <button type="submit">Send Feedback</button>
+          </form>
+          <p id="formMessage" class="status-text"></p>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">Account Security</p>
+          <h2>Change password</h2>
+          <form id="passwordForm" class="stacked-form">
+            <label>
+              Current password
+              <input id="currentPassword" name="currentPassword" type="password" required />
+            </label>
+            <label>
+              New password
+              <input id="newPassword" name="newPassword" type="password" minlength="10" required />
+            </label>
+            <label>
+              Confirm new password
+              <input id="confirmPassword" name="confirmPassword" type="password" minlength="10" required />
+            </label>
+            <button type="submit">Update Password</button>
+          </form>
+          <p id="passwordMessage" class="status-text"></p>
+        </section>
+
+        <section class="panel full-span">
+          <p class="eyebrow">My Feedback</p>
+          <h2>Stored entries</h2>
+          <div id="feedbackList" class="entry-list"></div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="assets/js/dashboard.js?v=20260404f"></script>
+  </body>
+</html>
