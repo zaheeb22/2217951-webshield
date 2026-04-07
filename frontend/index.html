@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      if (["localhost", "0.0.0.0", "::1"].includes(window.location.hostname)) {
+        const canonicalUrl = new URL(window.location.href);
+        canonicalUrl.hostname = "127.0.0.1";
+        window.location.replace(canonicalUrl.toString());
+      }
+    </script>
+    <title>WebShield Lab</title>
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260406a" />
+  </head>
+  <body class="home-page">
+    <div class="shell home-shell">
+      <header class="topbar home-topbar">
+        <div class="brand-lockup">
+          <p class="eyebrow">Security Evidence Workspace</p>
+          <h1>WebShield Lab</h1>
+        </div>
+        <nav class="nav">
+          <a href="index.html">Overview</a>
+          <a id="registerNavLink" href="register.html">Register</a>
+          <a id="loginNavLink" href="login.html">Login</a>
+          <a href="dashboard.html">Dashboard</a>
+          <a id="adminNavLink" class="hidden" href="admin.html">Admin</a>
+          <a id="auditNavLink" class="hidden" href="audit.html">Audit</a>
+          <a href="lab.html">Lab Demo</a>
+          <button id="logoutNavButton" class="ghost-button hidden" type="button">
+            Sign Out
+          </button>
+        </nav>
+      </header>
+
+      <main class="home-layout">
+        <section class="panel home-hero">
+          <div class="hero-grid">
+            <div class="hero-copy">
+              <p class="eyebrow">Working Security Case Study</p>
+              <h2>Watch sessions, moderation, and audit trails move together.</h2>
+              <p class="hero-lead">
+                WebShield Lab is a live Flask application for testing how account
+                flows, admin review, and evidence capture behave under normal use.
+              </p>
+              <p class="hero-subcopy">
+                Create an account, submit feedback, inspect the dashboard, and trace
+                what lands in the audit log. When you need a contrast case, the demo
+                area exposes intentionally unsafe routes in isolation instead of
+                weakening the whole application.
+              </p>
+              <div class="button-row hero-actions">
+                <a id="createAccountLink" class="primary-link" href="register.html">Create Account</a>
+                <a id="signInLink" class="secondary-button" href="login.html">Sign In</a>
+                <a class="ghost-button" href="dashboard.html">Open Dashboard</a>
+                <button id="logoutHeroButton" class="ghost-button hidden" type="button">
+                  Sign Out
+                </button>
+              </div>
+              <div class="badge-row hero-highlights">
+                <span class="badge">CSRF on write actions</span>
+                <span class="badge">Role-aware admin views</span>
+                <span class="badge">Audit export built in</span>
+                <span class="badge">Demo routes behind env flag</span>
+              </div>
+            </div>
+
+            <aside class="signal-board" aria-label="Current application state">
+              <div class="panel-header signal-board-header">
+                <div>
+                  <p class="eyebrow">Live Environment</p>
+                  <h3>Current state</h3>
+                </div>
+                <span id="modeValue" class="status-chip status-info">Checking</span>
+              </div>
+
+              <div class="signal-stack">
+                <div class="signal-row">
+                  <span class="signal-label">Session</span>
+                  <strong id="sessionHeadline">Checking session...</strong>
+                </div>
+                <p id="sessionStatus" class="status-text">Loading current session state.</p>
+
+                <div class="signal-row">
+                  <span class="signal-label">Mode</span>
+                  <strong id="labHeadline">Checking lab mode...</strong>
+                </div>
+                <p id="labStatus" class="status-text">Loading environment details.</p>
+              </div>
+
+              <div class="metric-grid">
+                <article class="metric-card">
+                  <span class="metric-label">Identity</span>
+                  <strong id="identityValue">Checking...</strong>
+                </article>
+                <article class="metric-card">
+                  <span class="metric-label">Role</span>
+                  <strong id="roleValue">Checking...</strong>
+                </article>
+                <article class="metric-card">
+                  <span class="metric-label">Admin views</span>
+                  <strong id="adminValue">Checking...</strong>
+                </article>
+                <article class="metric-card">
+                  <span class="metric-label">Recommended route</span>
+                  <strong id="routeValue">Checking...</strong>
+                </article>
+              </div>
+
+              <p id="nextStep" class="signal-note">
+                Loading a suggested next step for this session.
+              </p>
+            </aside>
+          </div>
+        </section>
+
+        <section class="home-card-grid" aria-label="Key capabilities">
+          <article class="panel home-card">
+            <p class="eyebrow">Operational Trace</p>
+            <h3>See which decisions changed the system.</h3>
+            <p>
+              Moderation actions, password changes, lab activity, and role updates are
+              recorded as events you can review later instead of claims you have to
+              explain from memory.
+            </p>
+          </article>
+
+          <article class="panel home-card">
+            <p class="eyebrow">Secure Path</p>
+            <h3>Keep normal user flows predictable.</h3>
+            <p>
+              Registration, login, feedback, and admin routes stay tied to sessions,
+              validation, and ORM-backed data access so the secure behavior remains the
+              default behavior.
+            </p>
+          </article>
+
+          <article class="panel home-card">
+            <p class="eyebrow">Demo Isolation</p>
+            <h3>Expose risky behaviour without trashing the main app.</h3>
+            <p>
+              The lab routes live behind `LAB_MODE=demo`, making it easier to capture
+              contrast cases locally while keeping the primary workflow clean and
+              defensible.
+            </p>
+          </article>
+        </section>
+
+        <section class="home-detail-grid">
+          <article class="panel narrative-panel">
+            <p class="eyebrow">Suggested Walkthrough</p>
+            <h3>Run the app like a real system, not a mock demo.</h3>
+            <ol class="process-list">
+              <li class="process-item">
+                <span class="process-number">1</span>
+                <div>
+                  <strong>Create a standard account and sign in.</strong>
+                  <p>
+                    Start with the same registration and session flow a normal user
+                    would take.
+                  </p>
+                </div>
+              </li>
+              <li class="process-item">
+                <span class="process-number">2</span>
+                <div>
+                  <strong>Submit feedback and inspect the dashboard.</strong>
+                  <p>
+                    Watch the record appear in the user-facing workflow before any
+                    administrative action happens.
+                  </p>
+                </div>
+              </li>
+              <li class="process-item">
+                <span class="process-number">3</span>
+                <div>
+                  <strong>Review the admin and audit views.</strong>
+                  <p>
+                    Compare what changed, who changed it, and which events were written
+                    to the evidence trail.
+                  </p>
+                </div>
+              </li>
+              <li class="process-item">
+                <span class="process-number">4</span>
+                <div>
+                  <strong>Switch to demo mode only when you need the contrast.</strong>
+                  <p>
+                    Use the vulnerable routes to document before-and-after behaviour
+                    without blending the unsafe path into regular use.
+                  </p>
+                </div>
+              </li>
+            </ol>
+          </article>
+
+          <article class="panel routes-panel">
+            <p class="eyebrow">Quick Routes</p>
+            <h3>Start where the question actually is.</h3>
+            <div class="route-grid">
+              <a id="registerRouteCard" class="route-link" href="register.html">
+                <strong>Register</strong>
+                <span>Create a standard user and begin the normal flow.</span>
+              </a>
+              <a id="loginRouteCard" class="route-link" href="login.html">
+                <strong>Login</strong>
+                <span>Test the session-backed authentication path.</span>
+              </a>
+              <a class="route-link" href="dashboard.html">
+                <strong>Dashboard</strong>
+                <span>Review submitted feedback and account-level workflow.</span>
+              </a>
+              <a class="route-link hidden" id="adminRouteCard" href="admin.html">
+                <strong>Admin</strong>
+                <span>Inspect moderation, user controls, and security reporting.</span>
+              </a>
+              <a class="route-link hidden" id="auditRouteCard" href="audit.html">
+                <strong>Audit</strong>
+                <span>Filter the event trail and export evidence snapshots.</span>
+              </a>
+              <a class="route-link" href="lab.html">
+                <strong>Lab Demo</strong>
+                <span>Open the isolated contrast environment for controlled testing.</span>
+              </a>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel mode-panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Environment Split</p>
+              <h3>Secure mode and demo mode should feel different.</h3>
+            </div>
+          </div>
+          <div class="mode-grid">
+            <article class="mode-card secure-card">
+              <span class="status-chip status-active">Secure mode</span>
+              <p>
+                Normal routes keep authorization checks, CSRF validation, audit
+                recording, and safer database access in place. This is the environment
+                for day-to-day development and evidence collection.
+              </p>
+            </article>
+
+            <article class="mode-card demo-card">
+              <span class="status-chip status-critical">Demo mode</span>
+              <p>
+                Intentional weaknesses are exposed only through the lab routes so you
+                can demonstrate unsafe rendering, weaker access checks, or raw SQL
+                behaviour without pretending the entire application is careless by
+                default.
+              </p>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="assets/js/main.js?v=20260407a"></script>
+  </body>
+</html>
