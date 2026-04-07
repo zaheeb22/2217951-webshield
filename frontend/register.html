@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      if (["localhost", "0.0.0.0", "::1"].includes(window.location.hostname)) {
+        const canonicalUrl = new URL(window.location.href);
+        canonicalUrl.hostname = "127.0.0.1";
+        window.location.replace(canonicalUrl.toString());
+      }
+    </script>
+    <title>Register | WebShield Lab</title>
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260404d" />
+  </head>
+  <body>
+    <div class="shell narrow">
+      <header class="topbar compact">
+        <div>
+          <p class="eyebrow">Frontend Page</p>
+          <h1>Create Account</h1>
+        </div>
+        <nav class="nav">
+          <a href="index.html">Overview</a>
+          <a href="login.html">Login</a>
+        </nav>
+      </header>
+
+      <main class="panel">
+        <form id="registerForm" class="stacked-form">
+          <label>
+            Username
+            <input id="username" name="username" type="text" maxlength="50" required />
+          </label>
+          <label>
+            Email
+            <input id="email" name="email" type="email" maxlength="255" required />
+          </label>
+          <label>
+            Password
+            <input id="password" name="password" type="password" minlength="10" required />
+          </label>
+          <button type="submit">Register</button>
+        </form>
+
+        <p id="message" class="status-text"></p>
+        <p class="muted-copy">
+          Passwords must be at least 10 characters and include uppercase,
+          lowercase, and numeric characters.
+        </p>
+      </main>
+    </div>
+
+    <script type="module" src="assets/js/register.js?v=20260407a"></script>
+  </body>
+</html>

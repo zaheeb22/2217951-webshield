@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      if (["localhost", "0.0.0.0", "::1"].includes(window.location.hostname)) {
+        const canonicalUrl = new URL(window.location.href);
+        canonicalUrl.hostname = "127.0.0.1";
+        window.location.replace(canonicalUrl.toString());
+      }
+    </script>
+    <title>Login | WebShield Lab</title>
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260404d" />
+  </head>
+  <body>
+    <div class="shell narrow">
+      <header class="topbar compact">
+        <div>
+          <p class="eyebrow">Frontend Page</p>
+          <h1>Sign In</h1>
+        </div>
+        <nav class="nav">
+          <a href="index.html">Overview</a>
+          <a href="register.html">Register</a>
+        </nav>
+      </header>
+
+      <main class="panel">
+        <form id="loginForm" class="stacked-form">
+          <label>
+            Email
+            <input id="email" name="email" type="email" maxlength="255" required />
+          </label>
+          <label>
+            Password
+            <input id="password" name="password" type="password" required />
+          </label>
+          <button type="submit">Login</button>
+        </form>
+
+        <p id="message" class="status-text"></p>
+        <p class="muted-copy">
+          Successful login creates a server-side session handled by the backend.
+          Repeated failed logins are temporarily rate limited.
+        </p>
+      </main>
+    </div>
+
+    <script type="module" src="assets/js/login.js?v=20260407a"></script>
+  </body>
+</html>
