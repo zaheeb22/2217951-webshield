@@ -13,11 +13,19 @@ AUDIT_CONTROL_CHAR_PATTERN = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F]")
 
 
 def sanitize_audit_text(value: str | None, max_length: int = 500) -> str | None:
-    """Clean log text before it is stored or returned to the frontend."""
+    """Normalize log text before it is stored or returned to the frontend."""
     if value is None:
         return None
 
-    cleaned = AUDIT_CONTROL_CHAR_PATTERN.sub("", str(value))
+    # Audit values are returned as JSON and rendered with text nodes on the
+    # frontend, so they should be normalized rather than HTML-escaped.
+    cleaned = str(value)
+    for _ in range(3):
+        decoded = html.unescape(cleaned)
+        if decoded == cleaned:
+            break
+        cleaned = decoded
+    cleaned = AUDIT_CONTROL_CHAR_PATTERN.sub("", cleaned)
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
     if not cleaned:
         return ""
@@ -25,7 +33,7 @@ def sanitize_audit_text(value: str | None, max_length: int = 500) -> str | None:
     if len(cleaned) > max_length:
         cleaned = f"{cleaned[: max_length - 3].rstrip()}..."
 
-    return html.escape(cleaned, quote=False)
+    return cleaned
 
 
 class User(db.Model):
