@@ -22,9 +22,9 @@
           <a id="registerNavLink" href="register.html">Register</a>
           <a id="loginNavLink" href="login.html">Login</a>
           <a href="dashboard.html">Dashboard</a>
-          <a id="adminNavLink" class="hidden" href="admin.html">Admin</a>
-          <a id="auditNavLink" class="hidden" href="audit.html">Audit</a>
-          <a href="lab.html">Lab Demo</a>
+          <a id="adminNavLink" class="hidden">Admin</a>
+          <a id="auditNavLink" class="hidden">Audit</a>
+          <a id="labNavLink" class="hidden" data-demo-link="true">Lab Demo</a>
           <button id="logoutNavButton" class="ghost-button hidden" type="button">
             Sign Out
           </button>
@@ -208,15 +208,15 @@
                 <strong>Dashboard</strong>
                 <span>Review submitted tickets and account-level workflow.</span>
               </a>
-              <a class="route-link hidden" id="adminRouteCard" href="admin.html">
+              <a class="route-link hidden" id="adminRouteCard">
                 <strong>Admin</strong>
                 <span>Inspect ticket moderation, user controls, and security reporting.</span>
               </a>
-              <a class="route-link hidden" id="auditRouteCard" href="audit.html">
+              <a class="route-link hidden" id="auditRouteCard">
                 <strong>Audit</strong>
                 <span>Filter the event trail and export evidence snapshots.</span>
               </a>
-              <a class="route-link" href="lab.html">
+              <a class="route-link hidden" id="labRouteCard" data-demo-link="true">
                 <strong>Lab Demo</strong>
                 <span>Open the isolated contrast environment for controlled validation.</span>
               </a>
@@ -237,7 +237,7 @@
               <p>
                 Normal routes keep authorization checks, CSRF validation, audit
                 recording, and safer database access in place. This is the environment
-                for day-to-day development and evidence collection.
+                for day-to-day use and evidence collection.
               </p>
             </article>
 

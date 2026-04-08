@@ -10,6 +10,7 @@ const registerNavLink = document.querySelector("#registerNavLink");
 const loginNavLink = document.querySelector("#loginNavLink");
 const adminNavLink = document.querySelector("#adminNavLink");
 const auditNavLink = document.querySelector("#auditNavLink");
+const labNavLink = document.querySelector("#labNavLink");
 const logoutNavButton = document.querySelector("#logoutNavButton");
 const createAccountLink = document.querySelector("#createAccountLink");
 const signInLink = document.querySelector("#signInLink");
@@ -18,6 +19,7 @@ const registerRouteCard = document.querySelector("#registerRouteCard");
 const loginRouteCard = document.querySelector("#loginRouteCard");
 const adminRouteCard = document.querySelector("#adminRouteCard");
 const auditRouteCard = document.querySelector("#auditRouteCard");
+const labRouteCard = document.querySelector("#labRouteCard");
 const sessionHeadline = document.querySelector("#sessionHeadline");
 const labHeadline = document.querySelector("#labHeadline");
 const identityValue = document.querySelector("#identityValue");
@@ -61,12 +63,12 @@ logoutNavButton?.addEventListener("click", handleLogout);
 logoutHeroButton?.addEventListener("click", handleLogout);
 
 async function loadOverview() {
-  // Read both the session endpoint and the lab-status endpoint in one place
+  // Read both the session endpoint and the general health endpoint in one place
   // because the landing page reacts to both pieces of backend state.
   try {
     const [sessionData, labData] = await Promise.all([
       request("/auth/session"),
-      request("/lab/status"),
+      request("/health"),
     ]);
 
     const isAdmin =
@@ -76,6 +78,26 @@ async function loadOverview() {
     toggleHidden(auditNavLink, !isAdmin);
     toggleHidden(adminRouteCard, !isAdmin);
     toggleHidden(auditRouteCard, !isAdmin);
+    if (isAdmin) {
+      adminNavLink?.setAttribute("href", "admin.html");
+      auditNavLink?.setAttribute("href", "audit.html");
+      adminRouteCard?.setAttribute("href", "admin.html");
+      auditRouteCard?.setAttribute("href", "audit.html");
+    } else {
+      adminNavLink?.removeAttribute("href");
+      auditNavLink?.removeAttribute("href");
+      adminRouteCard?.removeAttribute("href");
+      auditRouteCard?.removeAttribute("href");
+    }
+    toggleHidden(labNavLink, !labData.demoEnabled);
+    toggleHidden(labRouteCard, !labData.demoEnabled);
+    if (labData.demoEnabled) {
+      labNavLink?.setAttribute("href", "lab.html");
+      labRouteCard?.setAttribute("href", "lab.html");
+    } else {
+      labNavLink?.removeAttribute("href");
+      labRouteCard?.removeAttribute("href");
+    }
 
     setText(modeValue, labData.demoEnabled ? "Demo mode" : "Secure mode");
     if (modeValue) {

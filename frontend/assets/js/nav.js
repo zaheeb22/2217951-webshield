@@ -1,6 +1,19 @@
 // Shared responsive navigation toggle used across the frontend pages.
 
 const mobileMedia = window.matchMedia("(max-width: 720px)");
+const demoLinks = document.querySelectorAll("[data-demo-link]");
+
+function syncDemoLinks(demoEnabled) {
+  // Only advertise the lab route when demo mode is intentionally enabled.
+  demoLinks.forEach((link) => {
+    link.classList.toggle("hidden", !demoEnabled);
+    if (demoEnabled) {
+      link.setAttribute("href", "lab.html");
+    } else {
+      link.removeAttribute("href");
+    }
+  });
+}
 
 function setExpanded(button, nav, expanded) {
   // Keep the button state and the nav visibility in sync.
@@ -48,3 +61,12 @@ document.querySelectorAll(".topbar").forEach((topbar, index) => {
     mobileMedia.addListener(handleViewportChange);
   }
 });
+
+fetch("/api/health", { credentials: "include" })
+  .then((response) => (response.ok ? response.json() : null))
+  .then((data) => {
+    syncDemoLinks(Boolean(data?.demoEnabled));
+  })
+  .catch(() => {
+    syncDemoLinks(false);
+  });

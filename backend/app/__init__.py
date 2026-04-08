@@ -14,7 +14,7 @@ from werkzeug.exceptions import HTTPException
 
 from .config import Config
 from .extensions import cors, db
-from .models import User
+from .models import AuditLog, Feedback as SupportTicket, FeedbackStatusHistory as SupportTicketStatusHistory, User
 from .routes import admin_bp, auth_bp, lab_bp, tickets_bp
 from .security import api_error, ensure_csrf_token, validate_csrf_request
 from .validators import ValidationError, validate_password
@@ -190,7 +190,8 @@ def _register_blueprints(app: Flask) -> None:
     app.register_blueprint(auth_bp)
     app.register_blueprint(tickets_bp)
     app.register_blueprint(admin_bp)
-    app.register_blueprint(lab_bp)
+    if app.config["LAB_MODE"].lower() == "demo":
+        app.register_blueprint(lab_bp)
 
     @app.get("/")
     def index():
@@ -199,6 +200,11 @@ def _register_blueprints(app: Flask) -> None:
     @app.get("/<path:page_name>")
     def serve_frontend(page_name: str):
         if page_name.startswith("api/"):
+            abort(404)
+        if page_name in {"admin.html", "audit.html"}:
+            if g.current_user is None or g.current_user.role != "admin":
+                abort(404)
+        if page_name == "lab.html" and app.config["LAB_MODE"].lower() != "demo":
             abort(404)
         return send_from_directory(FRONTEND_ROOT, page_name)
 
@@ -251,6 +257,81 @@ def _register_commands(app: Flask) -> None:
         db.session.add(admin_user)
         db.session.commit()
         click.echo(f"Admin account created for {admin_user.email}.")
+
+    @app.cli.command("scrub-demo-data")
+    def scrub_demo_data() -> None:
+        """Rename stale demo wording in hosted ticket and audit data."""
+        title_replacements = {
+            "Testing": "Initial platform request",
+            "Test app": "Platform issue",
+        }
+        note_replacements = {
+            "Feedback submitted by user.": "Support ticket submitted by user.",
+        }
+        detail_replacements = {
+            "Submitted feedback titled": "Submitted support ticket titled",
+        }
+
+        db.create_all()
+        _sync_database_schema()
+
+        ticket_updates = 0
+        history_updates = 0
+        audit_updates = 0
+
+        for ticket_item in SupportTicket.query.all():
+            next_title = title_replacements.get(ticket_item.title)
+            if next_title and next_title != ticket_item.title:
+                ticket_item.title = next_title
+                ticket_updates += 1
+
+        for history_item in SupportTicketStatusHistory.query.all():
+            original_note = history_item.note or ""
+            next_note = original_note
+            for old_text, new_text in note_replacements.items():
+                next_note = next_note.replace(old_text, new_text)
+            for old_title, new_title in title_replacements.items():
+                next_note = next_note.replace(old_title, new_title)
+            if next_note != original_note:
+                history_item.note = next_note or None
+                history_updates += 1
+
+        for audit_item in AuditLog.query.all():
+            updated = False
+
+            if audit_item.action == "feedback_created":
+                audit_item.action = "ticket_created"
+                updated = True
+            if audit_item.action == "feedback_updated":
+                audit_item.action = "ticket_updated"
+                updated = True
+            if audit_item.target_type == "feedback":
+                audit_item.target_type = "ticket"
+                updated = True
+
+            original_detail = audit_item.detail or ""
+            next_detail = original_detail
+            for old_text, new_text in detail_replacements.items():
+                next_detail = next_detail.replace(old_text, new_text)
+            for old_text, new_text in note_replacements.items():
+                next_detail = next_detail.replace(old_text, new_text)
+            for old_title, new_title in title_replacements.items():
+                next_detail = next_detail.replace(f"'{old_title}'", f"'{new_title}'")
+
+            if next_detail != original_detail:
+                audit_item.detail = next_detail
+                updated = True
+
+            if updated:
+                audit_updates += 1
+
+        db.session.commit()
+        click.echo(
+            "Demo data scrubbed: "
+            f"{ticket_updates} ticket titles, "
+            f"{history_updates} history notes, "
+            f"{audit_updates} audit rows updated."
+        )
 
 
 def _sync_database_schema() -> None:

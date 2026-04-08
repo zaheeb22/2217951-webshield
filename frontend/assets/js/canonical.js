@@ -1,4 +1,4 @@
-// Keep local development on one loopback hostname so cookies and sessions stay consistent.
+// Keep local browser access on one loopback hostname so cookies and sessions stay consistent.
 
 const loopbackHosts = new Set(["0.0.0.0", "::1", "localhost"]);
 

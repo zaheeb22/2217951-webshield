@@ -46,6 +46,13 @@ async function ensureSession() {
   const isAdmin = sessionData.user.role === "admin";
   toggleHidden(adminLink, !isAdmin);
   toggleHidden(auditLink, !isAdmin);
+  if (isAdmin) {
+    adminLink?.setAttribute("href", "admin.html");
+    auditLink?.setAttribute("href", "audit.html");
+  } else {
+    adminLink?.removeAttribute("href");
+    auditLink?.removeAttribute("href");
+  }
   setMessage(
     dashboardMessage,
     isAdmin
