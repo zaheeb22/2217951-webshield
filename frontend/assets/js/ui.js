@@ -85,8 +85,9 @@ function getAuditThreatMeta(action, targetType = "") {
 
   if (
     [
+      "ticket_created",
       "password_changed",
-      "feedback_updated",
+      "ticket_updated",
     ].includes(normalizedAction)
   ) {
     return {

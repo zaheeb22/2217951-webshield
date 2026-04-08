@@ -2,13 +2,13 @@
 // This file intentionally uses unsafe rendering paths because the page is meant
 // to demonstrate XSS, IDOR, and SQL injection behavior in demo mode only.
 
-import { request } from "./api.js?v=20260404d";
+import { request } from "./api.js?v=20260408a";
 import {
   formatDateTime,
   renderEmptyState,
   setMessage,
   toggleHidden,
-} from "./ui.js?v=20260404d";
+} from "./ui.js?v=20260408a";
 
 const modeMessage = document.querySelector("#modeMessage");
 const adminLink = document.querySelector("#adminLink");
@@ -70,19 +70,19 @@ reflectedForm.addEventListener("submit", async (event) => {
 lookupForm.addEventListener("submit", async (event) => {
   // This card shows what an insecure object lookup can reveal.
   event.preventDefault();
-  setMessage(lookupStatus, "Looking up feedback without object-level checks...");
+  setMessage(lookupStatus, "Looking up a support ticket without object-level checks...");
 
   try {
     const data = await request(
-      `/lab/public-feedback/${encodeURIComponent(lookupForm.feedbackId.value)}`
+      `/lab/public-tickets/${encodeURIComponent(lookupForm.ticketId.value)}`
     );
     lookupResult.innerHTML = `
       <article class="entry-card">
-        <h3>${data.feedback.title}</h3>
-        <p class="entry-meta">Author: ${data.feedback.author.username} | Created: ${formatDateTime(
-          data.feedback.createdAt
+        <h3>${data.ticket.title}</h3>
+        <p class="entry-meta">Author: ${data.ticket.author.username} | Created: ${formatDateTime(
+          data.ticket.createdAt
         )}</p>
-        <p>${data.feedback.message}</p>
+        <p>${data.ticket.message}</p>
       </article>
     `;
     setMessage(lookupStatus, data.warning, "success");
@@ -112,7 +112,7 @@ searchForm.addEventListener("submit", async (event) => {
             ${data.rows
               .map(
                 (row) =>
-                  `<div class="entry-card"><strong>${row.title}</strong><p class="entry-meta">Feedback #${row.id} | Status: ${row.status} | User: ${row.user_id}</p></div>`
+                  `<div class="entry-card"><strong>${row.title}</strong><p class="entry-meta">Ticket #${row.id} | Status: ${row.status} | User: ${row.user_id}</p></div>`
               )
               .join("")}
           </div>

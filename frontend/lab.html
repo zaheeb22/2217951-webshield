@@ -11,7 +11,7 @@
       }
     </script>
     <title>Lab Demo | WebShield Lab</title>
-    <link rel="stylesheet" href="assets/css/styles.css?v=20260404d" />
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260408a" />
   </head>
   <body>
     <div class="shell">
@@ -56,13 +56,13 @@
 
         <section class="panel">
           <p class="eyebrow">IDOR Demo</p>
-          <h2>Public feedback lookup</h2>
+          <h2>Public support ticket lookup</h2>
           <form id="lookupForm" class="stacked-form">
             <label>
-              Feedback ID
-              <input id="feedbackId" name="feedbackId" type="number" min="1" required />
+              Ticket ID
+              <input id="ticketId" name="ticketId" type="number" min="1" required />
             </label>
-            <button type="submit">Fetch Feedback</button>
+            <button type="submit">Fetch Ticket</button>
           </form>
           <p id="lookupStatus" class="status-text"></p>
           <div id="lookupResult" class="entry-list"></div>
@@ -84,6 +84,6 @@
       </main>
     </div>
 
-    <script type="module" src="assets/js/lab.js?v=20260404f"></script>
+    <script type="module" src="assets/js/lab.js?v=20260408a"></script>
   </body>
 </html>

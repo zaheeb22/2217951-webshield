@@ -1,4 +1,4 @@
-"""Database models that describe users, feedback, and audit evidence."""
+"""Database models that describe users, support tickets, and audit evidence."""
 
 import html
 import re
@@ -29,7 +29,7 @@ def sanitize_audit_text(value: str | None, max_length: int = 500) -> str | None:
 
 
 class User(db.Model):
-    """Account record used for login, role checks, and ownership of feedback."""
+    """Account record used for login, role checks, and ownership of support tickets."""
 
     __tablename__ = "users"
 
@@ -47,7 +47,7 @@ class User(db.Model):
     last_login_at = db.Column(db.DateTime(timezone=True), nullable=True)
     last_password_changed_at = db.Column(db.DateTime(timezone=True), nullable=True)
 
-    # These relationships connect a user to their feedback, audit trail,
+    # These relationships connect a user to their support tickets, audit trail,
     # and any moderation actions they performed.
     feedback_entries = db.relationship(
         "Feedback",
@@ -88,8 +88,9 @@ class User(db.Model):
 
 
 class Feedback(db.Model):
-    """A feedback item submitted by a normal user and reviewed by admins."""
+    """A support ticket submitted by a normal user and reviewed by admins."""
 
+    # The original table name is preserved so existing databases keep working.
     __tablename__ = "feedback"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -110,7 +111,7 @@ class Feedback(db.Model):
         onupdate=func.now(),
     )
 
-    # Each feedback item belongs to one author and can have many status updates.
+    # Each support ticket belongs to one author and can have many status updates.
     author = db.relationship("User", back_populates="feedback_entries")
     status_history = db.relationship(
         "FeedbackStatusHistory",
@@ -124,7 +125,7 @@ class Feedback(db.Model):
         include_author: bool = False,
         include_history: bool = False,
     ) -> dict:
-        """Return feedback data, with optional author and history details."""
+        """Return support ticket data, with optional author and history details."""
         payload = {
             "id": self.id,
             "title": self.title,
@@ -149,8 +150,9 @@ class Feedback(db.Model):
 
 
 class FeedbackStatusHistory(db.Model):
-    """Timeline of feedback state changes, including who made each change."""
+    """Timeline of support ticket state changes, including who made each change."""
 
+    # The original table name is preserved so existing databases keep working.
     __tablename__ = "feedback_status_history"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -165,7 +167,7 @@ class FeedbackStatusHistory(db.Model):
         server_default=func.now(),
     )
 
-    # This links each history row back to the feedback item and the acting user.
+    # This links each history row back to the support ticket and the acting user.
     feedback = db.relationship("Feedback", back_populates="status_history")
     actor = db.relationship("User", back_populates="feedback_status_events")
 
@@ -173,7 +175,7 @@ class FeedbackStatusHistory(db.Model):
         """Return one moderation step in a frontend-friendly shape."""
         return {
             "id": self.id,
-            "feedbackId": self.feedback_id,
+            "ticketId": self.feedback_id,
             "previousStatus": self.previous_status,
             "nextStatus": self.next_status,
             "note": self.note,

@@ -1,4 +1,4 @@
-"""Input validation helpers for auth, feedback, and admin forms."""
+"""Input validation helpers for auth, support ticket, and admin forms."""
 
 import re
 
@@ -11,7 +11,7 @@ class ValidationError(ValueError):
 
 USERNAME_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_.-]{2,31}$")
 EMAIL_PATTERN = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,63}$")
-FEEDBACK_TITLE_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9 .,:!?()/&-]{2,149}$")
+TICKET_TITLE_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9 .,:!?()/&-]{2,149}$")
 PASSWORD_UPPER_PATTERN = re.compile(r"[A-Z]")
 PASSWORD_LOWER_PATTERN = re.compile(r"[a-z]")
 PASSWORD_DIGIT_PATTERN = re.compile(r"\d")
@@ -112,14 +112,14 @@ def validate_password(value: str) -> str:
     return password
 
 
-def validate_feedback_title(value: str) -> str:
-    """Check that feedback titles stay short, readable, and low-risk."""
+def validate_ticket_title(value: str) -> str:
+    """Check that support ticket titles stay short, readable, and low-risk."""
     title = _clean_single_line(value)
     if len(title) < 3:
         raise ValidationError("Title must be at least 3 characters long.")
     if len(title) > 150:
         raise ValidationError("Title must be 150 characters or fewer.")
-    if not FEEDBACK_TITLE_PATTERN.fullmatch(title):
+    if not TICKET_TITLE_PATTERN.fullmatch(title):
         raise ValidationError(
             "Title contains blocked characters. Use letters, numbers, spaces, and basic punctuation only."
         )
@@ -128,8 +128,8 @@ def validate_feedback_title(value: str) -> str:
     return title
 
 
-def validate_feedback_message(value: str) -> str:
-    """Check that feedback bodies are meaningful text, not markup or payloads."""
+def validate_ticket_message(value: str) -> str:
+    """Check that support ticket bodies are meaningful text, not markup or payloads."""
     message = _clean_multiline(value)
     if len(message) < 10:
         raise ValidationError("Message must be at least 10 characters long.")
@@ -141,7 +141,7 @@ def validate_feedback_message(value: str) -> str:
 
 
 def validate_admin_note(value: str) -> str:
-    """Validate optional moderator notes stored with feedback history."""
+    """Validate optional moderator notes stored with ticket history."""
     note = _clean_multiline(value)
     if len(note) > 1200:
         raise ValidationError("Admin note must be 1200 characters or fewer.")
@@ -149,3 +149,13 @@ def validate_admin_note(value: str) -> str:
         _reject_markup(note, "Admin note")
         _reject_attack_payload(note, "Admin note", strict_quotes=True)
     return note
+
+
+def validate_feedback_title(value: str) -> str:
+    """Backward-compatible alias used by older feedback-named code paths."""
+    return validate_ticket_title(value)
+
+
+def validate_feedback_message(value: str) -> str:
+    """Backward-compatible alias used by older feedback-named code paths."""
+    return validate_ticket_message(value)

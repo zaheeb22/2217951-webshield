@@ -4,7 +4,7 @@ from flask import Blueprint, current_app, jsonify, request
 from sqlalchemy import text
 
 from ..extensions import db
-from ..models import Feedback
+from ..models import Feedback as SupportTicket
 from ..security import api_error, record_audit_event
 
 bp = Blueprint("lab", __name__, url_prefix="/api/lab")
@@ -59,28 +59,28 @@ def echo_preview():
     )
 
 
-@bp.get("/public-feedback/<int:feedback_id>")
-def public_feedback(feedback_id: int):
-    """Return feedback without ownership checks to demonstrate IDOR behavior."""
+@bp.get("/public-tickets/<int:ticket_id>")
+def public_ticket(ticket_id: int):
+    """Return a support ticket without ownership checks to demonstrate IDOR behavior."""
     demo_error = _require_demo_mode()
     if demo_error is not None:
         return demo_error
 
-    feedback_item = db.session.get(Feedback, feedback_id)
-    if feedback_item is None:
-        return api_error("Feedback item not found.", 404, code="not_found")
+    ticket_item = db.session.get(SupportTicket, ticket_id)
+    if ticket_item is None:
+        return api_error("Support ticket not found.", 404, code="not_found")
 
     record_audit_event(
-        action="lab_public_feedback_lookup",
-        target_type="feedback",
-        target_id=feedback_item.id,
-        detail="Loaded feedback without object-level authorization checks.",
+        action="lab_public_ticket_lookup",
+        target_type="ticket",
+        target_id=ticket_item.id,
+        detail="Loaded a support ticket without object-level authorization checks.",
     )
     db.session.commit()
     return jsonify(
         {
             "warning": "This route intentionally skips object-level authorization checks.",
-            "feedback": feedback_item.to_dict(include_author=True),
+            "ticket": ticket_item.to_dict(include_author=True),
         }
     )
 

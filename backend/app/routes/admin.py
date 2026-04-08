@@ -1,4 +1,4 @@
-"""Administrator routes for moderation, audit review, and evidence export."""
+"""Administrator routes for ticket review, audit review, and evidence export."""
 
 import csv
 from datetime import datetime, timedelta, timezone
@@ -8,7 +8,8 @@ from flask import Blueprint, Response, current_app, jsonify, request
 from sqlalchemy import func, or_
 
 from ..extensions import db
-from ..models import AuditLog, Feedback, FeedbackStatusHistory, User, sanitize_audit_text
+from ..models import AuditLog, Feedback as SupportTicket, User, sanitize_audit_text
+from ..models import FeedbackStatusHistory as SupportTicketStatusHistory
 from ..security import (
     admin_required,
     api_error,
@@ -71,7 +72,7 @@ def _serialise_security_scenarios() -> list[dict]:
             "testingTool": "SQLMap or crafted query strings",
             "demoRoute": "/api/lab/insecure-search",
             "beforeState": "Demo mode builds a SQL query with string concatenation and may expose data or raw errors.",
-            "afterState": "Secure mode uses SQLAlchemy ORM queries and validated input on feedback routes.",
+            "afterState": "Secure mode uses SQLAlchemy ORM queries and validated input on support ticket routes.",
             "mitigation": "Use ORM or parameterized queries and validate user input.",
             "demoEnabled": demo_enabled,
         },
@@ -89,9 +90,9 @@ def _serialise_security_scenarios() -> list[dict]:
             "id": "idor",
             "vulnerability": "Insecure Direct Object Reference (IDOR)",
             "testingTool": "Manual URL manipulation",
-            "demoRoute": "/api/lab/public-feedback/<id>",
-            "beforeState": "Demo mode exposes feedback records without object-level authorization checks.",
-            "afterState": "Secure user routes only return feedback belonging to the authenticated user.",
+            "demoRoute": "/api/lab/public-tickets/<id>",
+            "beforeState": "Demo mode exposes support tickets without object-level authorization checks.",
+            "afterState": "Secure user routes only return tickets belonging to the authenticated user.",
             "mitigation": "Apply object-level authorization and role checks on every record fetch.",
             "demoEnabled": demo_enabled,
         },
@@ -167,9 +168,9 @@ def _bool_filter_value(raw_value: str | None) -> bool | None:
 
 def _user_list_payload(users: list[User]) -> list[dict]:
     """Add summary counts so the admin page can show richer user cards."""
-    feedback_counts = dict(
-        db.session.query(Feedback.user_id, func.count(Feedback.id))
-        .group_by(Feedback.user_id)
+    ticket_counts = dict(
+        db.session.query(SupportTicket.user_id, func.count(SupportTicket.id))
+        .group_by(SupportTicket.user_id)
         .all()
     )
     audit_counts = dict(
@@ -182,7 +183,7 @@ def _user_list_payload(users: list[User]) -> list[dict]:
     items = []
     for user in users:
         payload = user.to_dict()
-        payload["feedbackCount"] = int(feedback_counts.get(user.id, 0))
+        payload["ticketCount"] = int(ticket_counts.get(user.id, 0))
         payload["auditEventCount"] = int(audit_counts.get(user.id, 0))
         items.append(payload)
     return items
@@ -204,22 +205,22 @@ def _overview_summary() -> dict:
         or 0
     )
     disabled_users = total_users - active_users
-    total_feedback = db.session.query(func.count(Feedback.id)).scalar() or 0
-    pending_feedback = (
-        db.session.query(func.count(Feedback.id))
-        .filter(Feedback.status == "pending")
+    total_tickets = db.session.query(func.count(SupportTicket.id)).scalar() or 0
+    pending_tickets = (
+        db.session.query(func.count(SupportTicket.id))
+        .filter(SupportTicket.status == "pending")
         .scalar()
         or 0
     )
-    reviewed_feedback = (
-        db.session.query(func.count(Feedback.id))
-        .filter(Feedback.status == "reviewed")
+    reviewed_tickets = (
+        db.session.query(func.count(SupportTicket.id))
+        .filter(SupportTicket.status == "reviewed")
         .scalar()
         or 0
     )
-    resolved_feedback = (
-        db.session.query(func.count(Feedback.id))
-        .filter(Feedback.status == "resolved")
+    resolved_tickets = (
+        db.session.query(func.count(SupportTicket.id))
+        .filter(SupportTicket.status == "resolved")
         .scalar()
         or 0
     )
@@ -237,10 +238,10 @@ def _overview_summary() -> dict:
         "activeUsers": active_users,
         "disabledUsers": disabled_users,
         "adminUsers": admin_users,
-        "totalFeedback": total_feedback,
-        "pendingFeedback": pending_feedback,
-        "reviewedFeedback": reviewed_feedback,
-        "resolvedFeedback": resolved_feedback,
+        "totalTickets": total_tickets,
+        "pendingTickets": pending_tickets,
+        "reviewedTickets": reviewed_tickets,
+        "resolvedTickets": resolved_tickets,
         "auditEvents": total_audit_logs,
         "failedLoginsLast24h": failed_logins_last_24h,
         "lockedLoginAttempts": len(
@@ -411,39 +412,39 @@ def reset_user_password(user_id: int):
     )
 
 
-@bp.get("/feedback")
+@bp.get("/tickets")
 @admin_required
-def list_feedback():
-    """Return feedback records for moderation, including author and history details."""
+def list_tickets():
+    """Return support tickets for moderation, including author and history details."""
     status_filter = (request.args.get("status") or "").strip().lower()
-    query = Feedback.query.order_by(Feedback.created_at.desc())
+    query = SupportTicket.query.order_by(SupportTicket.created_at.desc())
     if status_filter:
-        query = query.filter(Feedback.status == status_filter)
+        query = query.filter(SupportTicket.status == status_filter)
 
-    feedback_items = query.all()
+    ticket_items = query.all()
     return jsonify(
         {
             "items": [
                 item.to_dict(include_author=True, include_history=True)
-                for item in feedback_items
+                for item in ticket_items
             ]
         }
     )
 
 
-@bp.patch("/feedback/<int:feedback_id>")
+@bp.patch("/tickets/<int:ticket_id>")
 @admin_required
-def update_feedback_status(feedback_id: int):
-    """Update feedback status or note and record the change in history and audit logs."""
+def update_ticket_status(ticket_id: int):
+    """Update ticket status or note and record the change in history and audit logs."""
     payload = request.get_json(silent=True) or {}
     actor = current_user()
-    feedback_item = db.session.get(Feedback, feedback_id)
+    ticket_item = db.session.get(SupportTicket, ticket_id)
 
-    if feedback_item is None:
-        return api_error("Feedback item not found.", 404, code="not_found")
+    if ticket_item is None:
+        return api_error("Support ticket not found.", 404, code="not_found")
 
     incoming_status = payload.get("status")
-    new_status = feedback_item.status
+    new_status = ticket_item.status
     if incoming_status is not None:
         new_status = (incoming_status or "").strip().lower()
         if new_status not in ALLOWED_STATUSES:
@@ -458,37 +459,37 @@ def update_feedback_status(feedback_id: int):
     except ValidationError as exc:
         return api_error(str(exc), 400, code="validation_error")
 
-    previous_status = feedback_item.status
-    previous_note = feedback_item.admin_note or ""
+    previous_status = ticket_item.status
+    previous_note = ticket_item.admin_note or ""
     changes = []
 
     if previous_status != new_status:
-        feedback_item.status = new_status
+        ticket_item.status = new_status
         changes.append(f"status {previous_status} -> {new_status}")
     if previous_note != admin_note:
-        feedback_item.admin_note = admin_note or None
+        ticket_item.admin_note = admin_note or None
         changes.append("admin note updated")
 
     if not changes:
         return api_error(
-            "No feedback changes were submitted.",
+            "No ticket changes were submitted.",
             400,
             code="no_changes",
         )
 
     db.session.add(
-        FeedbackStatusHistory(
-            feedback_id=feedback_item.id,
+        SupportTicketStatusHistory(
+            feedback_id=ticket_item.id,
             actor_id=actor.id,
             previous_status=previous_status,
-            next_status=feedback_item.status,
-            note=feedback_item.admin_note,
+            next_status=ticket_item.status,
+            note=ticket_item.admin_note,
         )
     )
     record_audit_event(
-        action="feedback_updated",
-        target_type="feedback",
-        target_id=feedback_item.id,
+        action="ticket_updated",
+        target_type="ticket",
+        target_id=ticket_item.id,
         detail="; ".join(changes),
         actor_id=actor.id,
     )
@@ -496,8 +497,8 @@ def update_feedback_status(feedback_id: int):
 
     return jsonify(
         {
-            "message": "Feedback updated successfully.",
-            "feedback": feedback_item.to_dict(
+            "message": "Support ticket updated successfully.",
+            "ticket": ticket_item.to_dict(
                 include_author=True,
                 include_history=True,
             ),

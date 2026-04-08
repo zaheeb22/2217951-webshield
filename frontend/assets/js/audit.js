@@ -1,7 +1,7 @@
 // Script for the dedicated audit page.
 // It is an admin-only view focused on filtering and exporting audit events.
 
-import { download, request } from "./api.js?v=20260404d";
+import { download, request } from "./api.js?v=20260408a";
 import {
   createStatusChip,
   formatDateTime,
@@ -9,7 +9,7 @@ import {
   renderEmptyState,
   renderInfoRows,
   setMessage,
-} from "./ui.js?v=20260404g";
+} from "./ui.js?v=20260408a";
 
 const auditAdminInfo = document.querySelector("#auditAdminInfo");
 const auditPageMessage = document.querySelector("#auditPageMessage");
@@ -98,8 +98,8 @@ async function loadSummary() {
     ["Failed logins (24h)", String(data.summary.failedLoginsLast24h)],
     ["Locked attempts", String(data.summary.lockedLoginAttempts)],
     ["Lab mode", data.summary.labMode],
-    ["Pending feedback", String(data.summary.pendingFeedback)],
-    ["Resolved feedback", String(data.summary.resolvedFeedback)],
+    ["Pending tickets", String(data.summary.pendingTickets)],
+    ["Resolved tickets", String(data.summary.resolvedTickets)],
   ]);
 }
 

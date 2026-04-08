@@ -1,8 +1,8 @@
 // Script for the main admin dashboard.
-// It ties together user management, moderation, login-attempt review,
+// It ties together user management, ticket review, login-attempt review,
 // audit browsing, and security-report exports.
 
-import { download, request } from "./api.js?v=20260404d";
+import { download, request } from "./api.js?v=20260408a";
 import {
   createStatusChip,
   formatDateTime,
@@ -10,7 +10,7 @@ import {
   renderEmptyState,
   renderInfoRows,
   setMessage,
-} from "./ui.js?v=20260404g";
+} from "./ui.js?v=20260408a";
 
 const adminInfo = document.querySelector("#adminInfo");
 const adminMessage = document.querySelector("#adminMessage");
@@ -22,9 +22,9 @@ const loginAttemptList = document.querySelector("#loginAttemptList");
 const loginAttemptMessage = document.querySelector("#loginAttemptMessage");
 const refreshAttemptsButton = document.querySelector("#refreshAttemptsButton");
 const resetAllAttemptsButton = document.querySelector("#resetAllAttemptsButton");
-const feedbackFilterForm = document.querySelector("#feedbackFilterForm");
-const adminFeedbackList = document.querySelector("#adminFeedbackList");
-const feedbackMessage = document.querySelector("#feedbackMessage");
+const ticketFilterForm = document.querySelector("#ticketFilterForm");
+const adminTicketList = document.querySelector("#adminTicketList");
+const ticketMessage = document.querySelector("#ticketMessage");
 const auditFilterForm = document.querySelector("#auditFilterForm");
 const auditLogList = document.querySelector("#auditLogList");
 const auditMessage = document.querySelector("#auditMessage");
@@ -76,7 +76,7 @@ async function ensureAdminSession() {
 }
 
 function buildHistoryList(historyItems) {
-  // Reuse the same status-history rendering for feedback moderation cards.
+  // Reuse the same status-history rendering for support ticket moderation cards.
   if (!historyItems?.length) {
     return null;
   }
@@ -126,7 +126,7 @@ function buildUserCard(user) {
 
   const counts = document.createElement("p");
   counts.textContent =
-    `Feedback: ${user.feedbackCount} | Audit events: ${user.auditEventCount} | ` +
+    `Tickets: ${user.ticketCount} | Audit events: ${user.auditEventCount} | ` +
     `Password updated: ${formatDateTime(user.lastPasswordChangedAt)}`;
 
   const controls = document.createElement("div");
@@ -279,8 +279,8 @@ function buildLoginAttemptCard(item) {
   return article;
 }
 
-function buildFeedbackCard(item) {
-  // Render one feedback record plus the admin controls that can change it.
+function buildTicketCard(item) {
+  // Render one support ticket plus the admin controls that can change it.
   const article = document.createElement("article");
   article.className = "entry-card";
 
@@ -320,20 +320,20 @@ function buildFeedbackCard(item) {
 
   const button = document.createElement("button");
   button.type = "button";
-  button.textContent = "Update Feedback";
+  button.textContent = "Update Ticket";
   button.addEventListener("click", async () => {
     try {
-      await request(`/admin/feedback/${item.id}`, {
+      await request(`/admin/tickets/${item.id}`, {
         method: "PATCH",
         body: JSON.stringify({
           status: select.value,
           adminNote: noteInput.value.trim(),
         }),
       });
-      setMessage(feedbackMessage, "Feedback updated successfully.", "success");
-      await Promise.all([loadOverview(), loadAdminFeedback(), loadAuditLogs()]);
+      setMessage(ticketMessage, "Support ticket updated successfully.", "success");
+      await Promise.all([loadOverview(), loadAdminTickets(), loadAuditLogs()]);
     } catch (error) {
-      setMessage(feedbackMessage, error.message, "error");
+      setMessage(ticketMessage, error.message, "error");
     }
   });
 
@@ -419,10 +419,10 @@ async function loadOverview() {
     ["Active users", String(data.summary.activeUsers)],
     ["Disabled users", String(data.summary.disabledUsers)],
     ["Administrators", String(data.summary.adminUsers)],
-    ["Feedback records", String(data.summary.totalFeedback)],
-    ["Pending feedback", String(data.summary.pendingFeedback)],
-    ["Reviewed feedback", String(data.summary.reviewedFeedback)],
-    ["Resolved feedback", String(data.summary.resolvedFeedback)],
+    ["Support tickets", String(data.summary.totalTickets)],
+    ["Pending tickets", String(data.summary.pendingTickets)],
+    ["Reviewed tickets", String(data.summary.reviewedTickets)],
+    ["Resolved tickets", String(data.summary.resolvedTickets)],
     ["Audit events", String(data.summary.auditEvents)],
     ["Failed logins (24h)", String(data.summary.failedLoginsLast24h)],
     ["Locked attempts", String(data.summary.lockedLoginAttempts)],
@@ -465,20 +465,20 @@ async function loadLoginAttempts() {
   });
 }
 
-async function loadAdminFeedback() {
-  // Load feedback records for moderation and status changes.
-  const params = formToParams(feedbackFilterForm);
+async function loadAdminTickets() {
+  // Load support tickets for moderation and status changes.
+  const params = formToParams(ticketFilterForm);
   const query = params.toString();
-  const data = await request(`/admin/feedback${query ? `?${query}` : ""}`);
+  const data = await request(`/admin/tickets${query ? `?${query}` : ""}`);
 
   if (!data.items.length) {
-    renderEmptyState(adminFeedbackList, "No feedback records available yet.");
+    renderEmptyState(adminTicketList, "No support tickets are available yet.");
     return;
   }
 
-  adminFeedbackList.innerHTML = "";
+  adminTicketList.innerHTML = "";
   data.items.forEach((item) => {
-    adminFeedbackList.append(buildFeedbackCard(item));
+    adminTicketList.append(buildTicketCard(item));
   });
 }
 
@@ -508,7 +508,7 @@ async function loadSecurityReport() {
     ["Demo mode", data.summary.demoEnabled ? "Enabled" : "Disabled"],
     ["Lab mode value", data.summary.labMode],
     ["Tracked vulnerabilities", String(data.scenarios.length)],
-    ["Feedback coverage", `${data.summary.pendingFeedback} pending / ${data.summary.resolvedFeedback} resolved`],
+    ["Ticket coverage", `${data.summary.pendingTickets} pending / ${data.summary.resolvedTickets} resolved`],
   ]);
 
   renderSecurityTable(data.scenarios);
@@ -520,9 +520,9 @@ userFilterForm.addEventListener("submit", async (event) => {
   await loadUsers();
 });
 
-feedbackFilterForm.addEventListener("submit", async (event) => {
+ticketFilterForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  await loadAdminFeedback();
+  await loadAdminTickets();
 });
 
 auditFilterForm.addEventListener("submit", async (event) => {
@@ -612,7 +612,7 @@ async function initialiseAdminPage() {
       loadOverview(),
       loadUsers(),
       loadLoginAttempts(),
-      loadAdminFeedback(),
+      loadAdminTickets(),
       loadAuditLogs(),
       loadSecurityReport(),
     ]);

@@ -1,7 +1,7 @@
 // Script for the signed-in user dashboard.
-// It combines account details, feedback history, feedback submission, and password changes.
+// It combines account details, support ticket history, ticket submission, and password changes.
 
-import { request } from "./api.js?v=20260404d";
+import { request } from "./api.js?v=20260408a";
 import {
   createStatusChip,
   formatDateTime,
@@ -9,11 +9,11 @@ import {
   renderInfoRows,
   setMessage,
   toggleHidden,
-} from "./ui.js?v=20260404d";
+} from "./ui.js?v=20260408a";
 
 const userDetails = document.querySelector("#userDetails");
-const feedbackList = document.querySelector("#feedbackList");
-const feedbackForm = document.querySelector("#feedbackForm");
+const ticketList = document.querySelector("#ticketList");
+const ticketForm = document.querySelector("#ticketForm");
 const formMessage = document.querySelector("#formMessage");
 const logoutButton = document.querySelector("#logoutButton");
 const adminLink = document.querySelector("#adminLink");
@@ -49,7 +49,7 @@ async function ensureSession() {
   setMessage(
     dashboardMessage,
     isAdmin
-      ? "Administrator session active. You can review submissions in the admin dashboard and audit trail."
+      ? "Administrator session active. You can review support tickets in the admin dashboard and audit trail."
       : "Standard user session active. Admin routes remain restricted.",
     "success"
   );
@@ -58,7 +58,7 @@ async function ensureSession() {
 }
 
 function buildHistoryList(historyItems) {
-  // Show the moderation timeline that comes from feedback status history rows.
+  // Show the moderation timeline that comes from support ticket status history rows.
   if (!historyItems?.length) {
     return null;
   }
@@ -92,8 +92,8 @@ function buildHistoryList(historyItems) {
   return wrapper;
 }
 
-function buildFeedbackCard(item) {
-  // Render one feedback record exactly as it comes back from `/api/feedback/mine`.
+function buildTicketCard(item) {
+  // Render one support ticket exactly as it comes back from `/api/tickets/mine`.
   const article = document.createElement("article");
   article.className = "entry-card";
 
@@ -132,41 +132,41 @@ function buildFeedbackCard(item) {
   return article;
 }
 
-async function loadFeedback() {
-  // Load the current user's own feedback records from the backend.
-  const data = await request("/feedback/mine");
+async function loadTickets() {
+  // Load the current user's own support tickets from the backend.
+  const data = await request("/tickets/mine");
 
   if (!data.items.length) {
     renderEmptyState(
-      feedbackList,
-      "No feedback submitted yet. Use the form above to create your first record."
+      ticketList,
+      "No support tickets submitted yet. Use the form above to create your first ticket."
     );
     return;
   }
 
-  feedbackList.innerHTML = "";
+  ticketList.innerHTML = "";
   data.items.forEach((item) => {
-    feedbackList.append(buildFeedbackCard(item));
+    ticketList.append(buildTicketCard(item));
   });
 }
 
-feedbackForm.addEventListener("submit", async (event) => {
-  // Create a new feedback item, then refresh the on-page list.
+ticketForm.addEventListener("submit", async (event) => {
+  // Create a new support ticket, then refresh the on-page list.
   event.preventDefault();
-  setMessage(formMessage, "Submitting feedback...");
+  setMessage(formMessage, "Submitting support ticket...");
 
   try {
-    const data = await request("/feedback/", {
+    const data = await request("/tickets/", {
       method: "POST",
       body: JSON.stringify({
-        title: feedbackForm.title.value.trim(),
-        message: feedbackForm.message.value.trim(),
+        title: ticketForm.title.value.trim(),
+        message: ticketForm.message.value.trim(),
       }),
     });
 
-    feedbackForm.reset();
+    ticketForm.reset();
     setMessage(formMessage, data.message, "success");
-    await loadFeedback();
+    await loadTickets();
   } catch (error) {
     setMessage(formMessage, error.message, "error");
   }
@@ -204,7 +204,7 @@ async function initialiseDashboard() {
   // Start the dashboard by confirming the session and then loading data.
   try {
     await ensureSession();
-    await loadFeedback();
+    await loadTickets();
   } catch (error) {
     if (error.message !== "Authentication required.") {
       setMessage(formMessage, error.message, "error");

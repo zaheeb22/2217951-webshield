@@ -15,7 +15,7 @@ from werkzeug.exceptions import HTTPException
 from .config import Config
 from .extensions import cors, db
 from .models import User
-from .routes import admin_bp, auth_bp, feedback_bp, lab_bp
+from .routes import admin_bp, auth_bp, lab_bp, tickets_bp
 from .security import api_error, ensure_csrf_token, validate_csrf_request
 from .validators import ValidationError, validate_password
 
@@ -180,7 +180,7 @@ def _register_hooks(app: Flask) -> None:
 def _register_blueprints(app: Flask) -> None:
     """Attach backend API groups and simple frontend file-serving routes."""
     app.register_blueprint(auth_bp)
-    app.register_blueprint(feedback_bp)
+    app.register_blueprint(tickets_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(lab_bp)
 
@@ -327,6 +327,8 @@ def _sync_database_schema() -> None:
         for statement in user_statements:
             db.session.execute(text(statement))
 
+    # Support tickets still use the older table names so existing databases do not
+    # need a destructive rebuild just to adopt the renamed workflow.
     if inspector.has_table("feedback"):
         feedback_columns = {
             column["name"]

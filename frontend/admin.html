@@ -11,7 +11,7 @@
       }
     </script>
     <title>Admin Dashboard | WebShield Lab</title>
-    <link rel="stylesheet" href="assets/css/styles.css?v=20260404d" />
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260408a" />
   </head>
   <body>
     <div class="shell">
@@ -96,10 +96,10 @@
           <div class="panel-header">
             <div>
               <p class="eyebrow">Moderation</p>
-              <h2>Feedback review and history</h2>
+              <h2>Support ticket review and history</h2>
             </div>
           </div>
-          <form id="feedbackFilterForm" class="inline-form">
+          <form id="ticketFilterForm" class="inline-form">
             <label>
               Status
               <select name="status">
@@ -111,8 +111,8 @@
             </label>
             <button type="submit">Filter</button>
           </form>
-          <p id="feedbackMessage" class="status-text"></p>
-          <div id="adminFeedbackList" class="entry-list"></div>
+          <p id="ticketMessage" class="status-text"></p>
+          <div id="adminTicketList" class="entry-list"></div>
         </section>
 
         <section class="panel full-span">
@@ -136,7 +136,7 @@
               <select name="targetType">
                 <option value="">all</option>
                 <option value="user">user</option>
-                <option value="feedback">feedback</option>
+                <option value="ticket">ticket</option>
                 <option value="session">session</option>
                 <option value="route">route</option>
                 <option value="security">security</option>
@@ -202,6 +202,6 @@
       </main>
     </div>
 
-    <script type="module" src="assets/js/admin.js?v=20260404g"></script>
+    <script type="module" src="assets/js/admin.js?v=20260408a"></script>
   </body>
 </html>

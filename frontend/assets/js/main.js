@@ -1,8 +1,8 @@
 // Script for the public landing page.
 // It reads session state and lab mode so the homepage shows the right actions.
 
-import { request } from "./api.js?v=20260404d";
-import { setMessage, toggleHidden } from "./ui.js?v=20260404d";
+import { request } from "./api.js?v=20260408a";
+import { setMessage, toggleHidden } from "./ui.js?v=20260408a";
 
 const sessionStatus = document.querySelector("#sessionStatus");
 const labStatus = document.querySelector("#labStatus");
@@ -95,8 +95,8 @@ async function loadOverview() {
       setText(
         nextStep,
         isAdmin
-          ? "Open the admin or audit views to inspect moderation changes, account controls, and the evidence trail."
-          : "Head to the dashboard, submit or review feedback, and compare what the normal user flow records."
+          ? "Open the admin or audit views to inspect ticket updates, account controls, and the evidence trail."
+          : "Head to the dashboard, submit or review support tickets, and compare what the normal user flow records."
       );
       setMessage(
         sessionStatus,
@@ -111,7 +111,7 @@ async function loadOverview() {
       setText(routeValue, "Register / Login");
       setText(
         nextStep,
-        "Create a standard account first. That gives you a realistic baseline for session handling, feedback submission, and later admin review."
+        "Create a standard account first. That gives you a realistic baseline for session handling, ticket submission, and later admin review."
       );
       setMessage(
         sessionStatus,
