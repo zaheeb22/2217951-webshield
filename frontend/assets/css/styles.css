@@ -39,6 +39,10 @@ body {
     linear-gradient(145deg, var(--bg-top), var(--bg-bottom));
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -292,6 +296,58 @@ button.secondary-button {
 
 .entry-card h3 {
   margin-bottom: 0.4rem;
+}
+
+.user-record-card {
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.user-record-card:hover,
+.user-record-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(217, 119, 6, 0.35);
+  background: rgba(217, 119, 6, 0.08);
+  outline: none;
+}
+
+.user-card-hint {
+  margin-top: 0.85rem;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.2rem;
+  background: rgba(3, 7, 11, 0.68);
+  backdrop-filter: blur(8px);
+}
+
+.modal-panel {
+  width: min(760px, 100%);
+  max-height: min(90vh, 920px);
+  overflow-y: auto;
+  padding: 1.4rem;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.04), transparent 60%),
+    var(--panel-strong);
+  box-shadow: var(--shadow);
+}
+
+.modal-header {
+  margin-bottom: 0.75rem;
+}
+
+.modal-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
 }
 
 .audit-card {
@@ -649,6 +705,18 @@ button.secondary-button {
 
   .table-wrapper {
     margin-top: 0.85rem;
+  }
+
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 0.6rem;
+  }
+
+  .modal-panel {
+    width: 100%;
+    max-height: 88vh;
+    padding: 1rem;
+    border-radius: 22px 22px 0 0;
   }
 
   .comparison-table {

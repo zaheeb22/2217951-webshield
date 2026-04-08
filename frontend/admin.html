@@ -20,6 +20,8 @@
         <nav class="nav">
           <a href="index.html">Overview</a>
           <a href="dashboard.html">User Dashboard</a>
+          <a href="admin-users.html">Users</a>
+          <a href="admin-moderation.html">Moderation</a>
           <a href="audit.html">Audit</a>
           <a id="labNavLink" class="hidden" data-demo-link="true">Lab Demo</a>
           <button id="logoutButton" class="ghost-button" type="button">Logout</button>
@@ -43,35 +45,19 @@
         <section class="panel full-span">
           <div class="panel-header">
             <div>
-              <p class="eyebrow">User Management</p>
-              <h2>Accounts and roles</h2>
+              <p class="eyebrow">Workspace</p>
+              <h2>Open a dedicated admin view</h2>
             </div>
           </div>
-          <form id="userFilterForm" class="inline-form">
-            <label>
-              Search
-              <input name="search" type="text" placeholder="username or email" />
-            </label>
-            <label>
-              Role
-              <select name="role">
-                <option value="">all</option>
-                <option value="user">user</option>
-                <option value="admin">admin</option>
-              </select>
-            </label>
-            <label>
-              Active
-              <select name="active">
-                <option value="">all</option>
-                <option value="true">active</option>
-                <option value="false">disabled</option>
-              </select>
-            </label>
-            <button type="submit">Apply</button>
-          </form>
-          <p id="userMessage" class="status-text"></p>
-          <div id="userList" class="entry-list"></div>
+          <p class="status-text">
+            Account management, ticket moderation, and audit review now open in their
+            own pages so each workflow stays focused.
+          </p>
+          <div class="button-row">
+            <a class="primary-link" href="admin-users.html">List of Users</a>
+            <a class="secondary-button" href="admin-moderation.html">Moderation</a>
+            <a class="ghost-button" href="audit.html">Audit Trail</a>
+          </div>
         </section>
 
         <section class="panel full-span">
@@ -87,83 +73,6 @@
           </div>
           <p id="loginAttemptMessage" class="status-text"></p>
           <div id="loginAttemptList" class="entry-list"></div>
-        </section>
-
-        <section class="panel full-span">
-          <div class="panel-header">
-            <div>
-              <p class="eyebrow">Moderation</p>
-              <h2>Support ticket review and history</h2>
-            </div>
-          </div>
-          <form id="ticketFilterForm" class="inline-form">
-            <label>
-              Status
-              <select name="status">
-                <option value="">all</option>
-                <option value="pending">pending</option>
-                <option value="reviewed">reviewed</option>
-                <option value="resolved">resolved</option>
-              </select>
-            </label>
-            <button type="submit">Filter</button>
-          </form>
-          <p id="ticketMessage" class="status-text"></p>
-          <div id="adminTicketList" class="entry-list"></div>
-        </section>
-
-        <section class="panel full-span">
-          <div class="panel-header">
-            <div>
-              <p class="eyebrow">Audit Trail</p>
-              <h2>Filtered security and workflow events</h2>
-            </div>
-            <div class="button-row">
-              <button id="auditCsvButton" type="button">Export CSV</button>
-              <button id="auditJsonButton" class="secondary-button" type="button">Export JSON</button>
-            </div>
-          </div>
-          <form id="auditFilterForm" class="inline-form">
-            <label>
-              Action
-              <input name="action" type="text" placeholder="login, user_updated..." />
-            </label>
-            <label>
-              Target type
-              <select name="targetType">
-                <option value="">all</option>
-                <option value="user">user</option>
-                <option value="ticket">ticket</option>
-                <option value="session">session</option>
-                <option value="route">route</option>
-                <option value="security">security</option>
-                <option value="lab">lab</option>
-              </select>
-            </label>
-            <label>
-              Actor
-              <input name="actor" type="text" placeholder="username or email" />
-            </label>
-            <label>
-              From
-              <input name="dateFrom" type="datetime-local" />
-            </label>
-            <label>
-              To
-              <input name="dateTo" type="datetime-local" />
-            </label>
-            <label>
-              Limit
-              <select name="limit">
-                <option value="20">20</option>
-                <option value="40" selected>40</option>
-                <option value="80">80</option>
-              </select>
-            </label>
-            <button type="submit">Apply</button>
-          </form>
-          <p id="auditMessage" class="status-text"></p>
-          <div id="auditLogList" class="entry-list"></div>
         </section>
 
         <section class="panel full-span">

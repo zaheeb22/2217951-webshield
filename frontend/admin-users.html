@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="assets/js/canonical.js?v=20260408a"></script>
+    <title>User Management | WebShield Lab</title>
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260408b" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Frontend Page</p>
+          <h1>User Management</h1>
+        </div>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-label="Toggle navigation">
+          Menu
+        </button>
+        <nav class="nav">
+          <a href="index.html">Overview</a>
+          <a href="dashboard.html">User Dashboard</a>
+          <a href="admin.html">Admin</a>
+          <a href="admin-moderation.html">Moderation</a>
+          <a href="audit.html">Audit</a>
+          <a id="labNavLink" class="hidden" data-demo-link="true">Lab Demo</a>
+          <button id="logoutButton" class="ghost-button" type="button">Logout</button>
+        </nav>
+      </header>
+
+      <main class="grid">
+        <section class="panel">
+          <p class="eyebrow">Access</p>
+          <h2>Administrator session</h2>
+          <div id="adminInfo" class="info-grid"></div>
+          <p id="adminMessage" class="status-text"></p>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">Summary</p>
+          <h2>User overview</h2>
+          <div id="userSummary" class="info-grid"></div>
+        </section>
+
+        <section class="panel full-span">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">User Management</p>
+              <h2>Accounts and roles</h2>
+            </div>
+          </div>
+          <p class="status-text">
+            Select any user record below to open the full profile popup before making
+            account changes.
+          </p>
+          <form id="userFilterForm" class="inline-form">
+            <label>
+              Search
+              <input name="search" type="text" placeholder="username or email" />
+            </label>
+            <label>
+              Role
+              <select name="role">
+                <option value="">all</option>
+                <option value="user">user</option>
+                <option value="admin">admin</option>
+              </select>
+            </label>
+            <label>
+              Active
+              <select name="active">
+                <option value="">all</option>
+                <option value="true">active</option>
+                <option value="false">disabled</option>
+              </select>
+            </label>
+            <button type="submit">Apply</button>
+          </form>
+          <p id="userMessage" class="status-text"></p>
+          <div id="userList" class="entry-list"></div>
+        </section>
+      </main>
+
+      <div id="userModal" class="modal-backdrop hidden" aria-hidden="true">
+        <div
+          class="modal-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="userModalTitle"
+        >
+          <div class="panel-header modal-header">
+            <div>
+              <p class="eyebrow">Selected User</p>
+              <h2 id="userModalTitle">User profile</h2>
+            </div>
+            <div class="button-row">
+              <button
+                id="closeUserModalButton"
+                class="ghost-button"
+                type="button"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+
+          <p id="userModalMessage" class="status-text">
+            Review the profile details before applying any changes.
+          </p>
+          <div id="selectedUserInfo" class="info-grid"></div>
+
+          <section class="modal-section">
+            <p class="eyebrow">Profile Controls</p>
+            <h3>Edit account status</h3>
+            <div class="admin-controls">
+              <label class="stacked-form">
+                <span>Role</span>
+                <select id="modalRole">
+                  <option value="user">user</option>
+                  <option value="admin">admin</option>
+                </select>
+              </label>
+              <label class="stacked-form">
+                <span>Account status</span>
+                <select id="modalActive">
+                  <option value="true">active</option>
+                  <option value="false">disabled</option>
+                </select>
+              </label>
+              <button id="updateUserButton" type="button">Save Profile Changes</button>
+            </div>
+          </section>
+
+          <section class="modal-section">
+            <p class="eyebrow">Password Control</p>
+            <h3>Administrator reset</h3>
+            <div class="stacked-form">
+              <label>
+                New password
+                <input
+                  id="resetPasswordInput"
+                  type="password"
+                  placeholder="New password"
+                  minlength="10"
+                />
+              </label>
+              <label>
+                Confirm password
+                <input
+                  id="resetPasswordConfirm"
+                  type="password"
+                  placeholder="Confirm password"
+                  minlength="10"
+                />
+              </label>
+              <button id="resetPasswordButton" type="button">Reset Password</button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="assets/js/nav.js?v=20260408a"></script>
+    <script type="module" src="assets/js/admin-users.js?v=20260408a"></script>
+  </body>
+</html>
