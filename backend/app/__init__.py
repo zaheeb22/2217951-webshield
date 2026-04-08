@@ -7,6 +7,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from flask import Flask, Response, abort, current_app, g, jsonify, request, send_from_directory, session
+from sqlalchemy import inspect
 from sqlalchemy import or_
 from sqlalchemy import text
 from werkzeug.exceptions import HTTPException
@@ -58,37 +59,42 @@ def create_app() -> Flask:
 
 def _configure_logging(app: Flask) -> None:
     """Write backend errors to a rotating log file for later review."""
-    log_path = Path(app.config["ERROR_LOG_PATH"])
-    if not log_path.is_absolute():
-        log_path = BACKEND_ROOT / log_path
+    try:
+        log_path = Path(app.config["ERROR_LOG_PATH"])
+        if not log_path.is_absolute():
+            log_path = BACKEND_ROOT / log_path
 
-    log_path.parent.mkdir(parents=True, exist_ok=True)
-    resolved_log_path = str(log_path.resolve())
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        resolved_log_path = str(log_path.resolve())
 
-    existing_handler = next(
-        (
-            handler
-            for handler in app.logger.handlers
-            if isinstance(handler, RotatingFileHandler)
-            and getattr(handler, "baseFilename", None) == resolved_log_path
-        ),
-        None,
-    )
-
-    if existing_handler is None:
-        handler = RotatingFileHandler(
-            resolved_log_path,
-            maxBytes=app.config["ERROR_LOG_MAX_BYTES"],
-            backupCount=app.config["ERROR_LOG_BACKUP_COUNT"],
-            encoding="utf-8",
+        existing_handler = next(
+            (
+                handler
+                for handler in app.logger.handlers
+                if isinstance(handler, RotatingFileHandler)
+                and getattr(handler, "baseFilename", None) == resolved_log_path
+            ),
+            None,
         )
-        handler.setLevel(logging.ERROR)
-        handler.setFormatter(
-            logging.Formatter(
-                "%(asctime)s %(levelname)s [%(name)s] %(message)s in %(pathname)s:%(lineno)d"
+
+        if existing_handler is None:
+            handler = RotatingFileHandler(
+                resolved_log_path,
+                maxBytes=app.config["ERROR_LOG_MAX_BYTES"],
+                backupCount=app.config["ERROR_LOG_BACKUP_COUNT"],
+                encoding="utf-8",
             )
-        )
-        app.logger.addHandler(handler)
+            handler.setLevel(logging.ERROR)
+            handler.setFormatter(
+                logging.Formatter(
+                    "%(asctime)s %(levelname)s [%(name)s] %(message)s in %(pathname)s:%(lineno)d"
+                )
+            )
+            app.logger.addHandler(handler)
+    except OSError as exc:
+        # Serverless environments can restrict writes inside the deployed bundle.
+        # Falling back to the default stderr logger keeps the app alive.
+        app.logger.warning("File logging disabled: %s", exc)
 
     if app.logger.level == logging.NOTSET or app.logger.level > logging.INFO:
         app.logger.setLevel(logging.INFO)
@@ -204,7 +210,7 @@ def _register_commands(app: Flask) -> None:
     """Expose small Flask CLI helpers used during local development."""
     @app.cli.command("seed-admin")
     @click.option("--username", default="admin", show_default=True)
-    @click.option("--email", default="admin@webshield.local", show_default=True)
+    @click.option("--email", default="admin@gmail.com", show_default=True)
     @click.option(
         "--password",
         prompt=True,
@@ -218,6 +224,11 @@ def _register_commands(app: Flask) -> None:
         except ValidationError as exc:
             click.echo(str(exc))
             return
+
+        # Running the seed command should also repair or create the current schema
+        # so older local databases do not break before the admin check runs.
+        db.create_all()
+        _sync_database_schema()
 
         existing_user = User.query.filter(
             or_(User.username == username, User.email == email)
@@ -236,12 +247,108 @@ def _register_commands(app: Flask) -> None:
 
 def _sync_database_schema() -> None:
     """Apply lightweight schema fixes when auto-create is enabled locally."""
+    inspector = inspect(db.engine)
+
+    if inspector.has_table("users"):
+        user_columns = {
+            column["name"]
+            for column in inspector.get_columns("users")
+        }
+
+        user_statements = []
+        if "username" not in user_columns:
+            user_statements.append("ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(50)")
+            user_statements.append(
+                """
+                UPDATE users
+                SET username = LEFT('user_' || id::text, 50)
+                WHERE username IS NULL OR BTRIM(username) = ''
+                """
+            )
+        if "email" not in user_columns:
+            user_statements.append("ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255)")
+            user_statements.append(
+                """
+                UPDATE users
+                SET email = 'user_' || id::text || '@legacy.local'
+                WHERE email IS NULL OR BTRIM(email) = ''
+                """
+            )
+        if "password_hash" not in user_columns:
+            user_statements.append("ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255)")
+            if "password" in user_columns:
+                user_statements.append(
+                    """
+                    UPDATE users
+                    SET password_hash = password
+                    WHERE password_hash IS NULL OR BTRIM(password_hash) = ''
+                    """
+                )
+            user_statements.append(
+                """
+                UPDATE users
+                SET password_hash = '!'
+                WHERE password_hash IS NULL OR BTRIM(password_hash) = ''
+                """
+            )
+        if "role" not in user_columns:
+            user_statements.append("ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20)")
+            if "is_admin" in user_columns:
+                user_statements.append(
+                    """
+                    UPDATE users
+                    SET role = CASE WHEN is_admin THEN 'admin' ELSE 'user' END
+                    WHERE role IS NULL OR BTRIM(role) = ''
+                    """
+                )
+            user_statements.append(
+                """
+                UPDATE users
+                SET role = 'user'
+                WHERE role IS NULL OR BTRIM(role) = ''
+                """
+            )
+        if "is_active" not in user_columns:
+            user_statements.append(
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE"
+            )
+            user_statements.append("UPDATE users SET is_active = TRUE WHERE is_active IS NULL")
+        if "created_at" not in user_columns:
+            user_statements.append(
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()"
+            )
+        if "last_login_at" not in user_columns:
+            user_statements.append("ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ")
+        if "last_password_changed_at" not in user_columns:
+            user_statements.append(
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_password_changed_at TIMESTAMPTZ"
+            )
+
+        for statement in user_statements:
+            db.session.execute(text(statement))
+
+    if inspector.has_table("feedback"):
+        feedback_columns = {
+            column["name"]
+            for column in inspector.get_columns("feedback")
+        }
+
+        feedback_statements = []
+        if "status" not in feedback_columns:
+            feedback_statements.append(
+                "ALTER TABLE feedback ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'pending'"
+            )
+        if "admin_note" not in feedback_columns:
+            feedback_statements.append("ALTER TABLE feedback ADD COLUMN IF NOT EXISTS admin_note TEXT")
+        if "updated_at" not in feedback_columns:
+            feedback_statements.append(
+                "ALTER TABLE feedback ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()"
+            )
+
+        for statement in feedback_statements:
+            db.session.execute(text(statement))
+
     statements = [
-        "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE",
-        "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ",
-        "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_password_changed_at TIMESTAMPTZ",
-        "ALTER TABLE feedback ADD COLUMN IF NOT EXISTS admin_note TEXT",
-        "ALTER TABLE feedback ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()",
         """
         CREATE TABLE IF NOT EXISTS feedback_status_history (
             id SERIAL PRIMARY KEY,

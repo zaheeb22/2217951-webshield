@@ -29,6 +29,11 @@ def _normalise_database_url(raw_url: str | None) -> str:
     return cleaned
 
 
+def _is_vercel_environment() -> bool:
+    """Detect whether the app is running inside Vercel's serverless runtime."""
+    return os.getenv("VERCEL") == "1" or bool(os.getenv("VERCEL_ENV"))
+
+
 class Config:
     """Default settings for sessions, database access, lab mode, and logging."""
 
@@ -47,17 +52,21 @@ class Config:
     SESSION_COOKIE_NAME = "webshield_lab_session"
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
-    SESSION_COOKIE_SECURE = False
+    SESSION_COOKIE_SECURE = _is_vercel_environment()
     SESSION_REFRESH_EACH_REQUEST = True
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)
     JSON_SORT_KEYS = False
-    AUTO_CREATE_TABLES = True
+    AUTO_CREATE_TABLES = not _is_vercel_environment()
     LAB_MODE = "secure"
     CSRF_HEADER_NAME = "X-CSRF-Token"
     LOGIN_RATE_LIMIT_ATTEMPTS = 5
     LOGIN_RATE_LIMIT_WINDOW_SECONDS = 600
     LOGIN_RATE_LIMIT_LOCKOUT_SECONDS = 300
-    ERROR_LOG_PATH = str(BACKEND_ROOT / "logs" / "error.log")
+    ERROR_LOG_PATH = (
+        "/tmp/webshield-error.log"
+        if _is_vercel_environment()
+        else str(BACKEND_ROOT / "logs" / "error.log")
+    )
     ERROR_LOG_MAX_BYTES = 1_048_576
     ERROR_LOG_BACKUP_COUNT = 3
 
