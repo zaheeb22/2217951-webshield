@@ -43,12 +43,13 @@ class Config:
         "postgresql+psycopg://postgres:postgres@localhost:5432/webshield_lab"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    FRONTEND_ORIGINS = [
+    LOCAL_FRONTEND_ORIGINS = [
         "http://127.0.0.1:5000",
         "http://localhost:5000",
         "http://127.0.0.1:5500",
         "http://localhost:5500",
     ]
+    FRONTEND_ORIGINS = list(LOCAL_FRONTEND_ORIGINS)
     SESSION_COOKIE_NAME = "webshield_lab_session"
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
@@ -77,14 +78,19 @@ class Config:
         app.config["SQLALCHEMY_DATABASE_URI"] = _normalise_database_url(
             os.getenv("DATABASE_URL", cls.SQLALCHEMY_DATABASE_URI)
         )
-        app.config["FRONTEND_ORIGINS"] = [
-            origin.strip()
-            for origin in os.getenv(
-                "FRONTEND_ORIGINS",
-                ",".join(cls.FRONTEND_ORIGINS),
-            ).split(",")
-            if origin.strip()
-        ]
+        frontend_origins = os.getenv("FRONTEND_ORIGINS")
+        if frontend_origins is None:
+            # Production serves the frontend and API from the same host, so
+            # cross-origin access is only needed during local development.
+            app.config["FRONTEND_ORIGINS"] = (
+                [] if _is_vercel_environment() else list(cls.LOCAL_FRONTEND_ORIGINS)
+            )
+        else:
+            app.config["FRONTEND_ORIGINS"] = [
+                origin.strip()
+                for origin in frontend_origins.split(",")
+                if origin.strip()
+            ]
         app.config["AUTO_CREATE_TABLES"] = (
             os.getenv("AUTO_CREATE_TABLES", str(cls.AUTO_CREATE_TABLES)).lower()
             == "true"

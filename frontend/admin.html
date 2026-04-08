@@ -3,13 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script>
-      if (["localhost", "0.0.0.0", "::1"].includes(window.location.hostname)) {
-        const canonicalUrl = new URL(window.location.href);
-        canonicalUrl.hostname = "127.0.0.1";
-        window.location.replace(canonicalUrl.toString());
-      }
-    </script>
+    <script src="assets/js/canonical.js?v=20260408a"></script>
     <title>Admin Dashboard | WebShield Lab</title>
     <link rel="stylesheet" href="assets/css/styles.css?v=20260408b" />
   </head>
@@ -176,7 +170,7 @@
           <div class="panel-header">
             <div>
               <p class="eyebrow">Security Report</p>
-              <h2>Testing results and before/after comparison</h2>
+              <h2>Security controls and before/after comparison</h2>
             </div>
             <div class="button-row">
               <button id="securityCsvButton" type="button">Export CSV</button>
@@ -190,7 +184,7 @@
               <thead>
                 <tr>
                   <th>Vulnerability</th>
-                  <th>Testing Tool</th>
+                  <th>Review Method</th>
                   <th>Demo Route</th>
                   <th>Before Mitigation</th>
                   <th>After Mitigation</th>

@@ -3,13 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script>
-      if (["localhost", "0.0.0.0", "::1"].includes(window.location.hostname)) {
-        const canonicalUrl = new URL(window.location.href);
-        canonicalUrl.hostname = "127.0.0.1";
-        window.location.replace(canonicalUrl.toString());
-      }
-    </script>
+    <script src="assets/js/canonical.js?v=20260408a"></script>
     <title>Lab Demo | WebShield Lab</title>
     <link rel="stylesheet" href="assets/css/styles.css?v=20260408b" />
   </head>
@@ -37,7 +31,7 @@
           <h2>Use only in a local and isolated environment</h2>
           <p class="muted-copy">
             These demo routes exist only to support the dissertation's
-            before-versus-after testing. Keep `LAB_MODE=demo` restricted to your
+            before-versus-after verification. Keep `LAB_MODE=demo` restricted to your
             own machine.
           </p>
           <p id="modeMessage" class="status-text"></p>

@@ -24,6 +24,22 @@ BACKEND_ROOT = PROJECT_ROOT / "backend"
 FRONTEND_ROOT = PROJECT_ROOT / "frontend"
 
 
+def _content_security_policy() -> str:
+    """Return a tight CSP for both HTML pages and JSON responses."""
+    return "; ".join(
+        [
+            "default-src 'self'",
+            "base-uri 'self'",
+            "form-action 'self'",
+            "frame-ancestors 'self'",
+            "object-src 'none'",
+            "style-src 'self'",
+            "script-src 'self'",
+            "connect-src 'self'",
+        ]
+    )
+
+
 def create_app() -> Flask:
     """Build the Flask app, attach extensions, and register routes."""
     load_dotenv(BACKEND_ROOT / ".env", override=False)
@@ -39,11 +55,12 @@ def create_app() -> Flask:
     _configure_logging(app)
 
     db.init_app(app)
-    cors.init_app(
-        app,
-        supports_credentials=True,
-        resources={r"/api/*": {"origins": app.config["FRONTEND_ORIGINS"]}},
-    )
+    if app.config["FRONTEND_ORIGINS"]:
+        cors.init_app(
+            app,
+            supports_credentials=True,
+            resources={r"/api/*": {"origins": app.config["FRONTEND_ORIGINS"]}},
+        )
 
     _register_hooks(app)
     _register_blueprints(app)
@@ -129,16 +146,7 @@ def _register_hooks(app: Flask) -> None:
         response.headers["X-Frame-Options"] = "SAMEORIGIN"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
-        response.headers["Content-Security-Policy"] = (
-            "default-src 'self'; "
-            "base-uri 'self'; "
-            "form-action 'self'; "
-            "frame-ancestors 'self'; "
-            "object-src 'none'; "
-            "style-src 'self' 'unsafe-inline'; "
-            "script-src 'self' 'unsafe-inline'; "
-            "connect-src 'self' http://127.0.0.1:5000 http://localhost:5000"
-        )
+        response.headers["Content-Security-Policy"] = _content_security_policy()
         if request.path.startswith("/api/"):
             response.headers["Cache-Control"] = "no-store"
         return response

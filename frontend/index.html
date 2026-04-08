@@ -3,13 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script>
-      if (["localhost", "0.0.0.0", "::1"].includes(window.location.hostname)) {
-        const canonicalUrl = new URL(window.location.href);
-        canonicalUrl.hostname = "127.0.0.1";
-        window.location.replace(canonicalUrl.toString());
-      }
-    </script>
+    <script src="assets/js/canonical.js?v=20260408a"></script>
     <title>WebShield Lab</title>
     <link rel="stylesheet" href="assets/css/styles.css?v=20260408b" />
   </head>
@@ -44,7 +38,7 @@
               <p class="eyebrow">Working Security Case Study</p>
               <h2>Watch sessions, moderation, and audit trails move together.</h2>
               <p class="hero-lead">
-                WebShield Lab is a live Flask application for testing how account
+                WebShield Lab is a live Flask application for showing how account
                 flows, admin review, and evidence capture behave under normal use.
               </p>
               <p class="hero-subcopy">
@@ -224,7 +218,7 @@
               </a>
               <a class="route-link" href="lab.html">
                 <strong>Lab Demo</strong>
-                <span>Open the isolated contrast environment for controlled testing.</span>
+                <span>Open the isolated contrast environment for controlled validation.</span>
               </a>
             </div>
           </article>

@@ -580,6 +580,20 @@ button.secondary-button {
     border-radius: 20px;
   }
 
+  .grid,
+  .home-layout,
+  .home-card-grid,
+  .home-detail-grid,
+  .mode-grid,
+  .entry-list,
+  .history-list {
+    gap: 0.8rem;
+  }
+
+  .info-grid {
+    gap: 0.6rem;
+  }
+
   .button-row {
     width: 100%;
   }
@@ -604,6 +618,87 @@ button.secondary-button {
 
   .admin-controls > * {
     width: 100%;
+  }
+
+  .entry-card {
+    padding: 0.9rem;
+    border-radius: 16px;
+  }
+
+  .entry-card h3 {
+    line-height: 1.25;
+  }
+
+  .entry-meta {
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  .status-chip {
+    margin-bottom: 0.55rem;
+  }
+
+  .history-item,
+  .metric-card,
+  .process-item,
+  .route-link,
+  .mode-card {
+    padding: 0.85rem;
+    border-radius: 16px;
+  }
+
+  .table-wrapper {
+    margin-top: 0.85rem;
+  }
+
+  .comparison-table {
+    min-width: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .comparison-table thead {
+    display: none;
+  }
+
+  .comparison-table,
+  .comparison-table tbody,
+  .comparison-table tr,
+  .comparison-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .comparison-table tr {
+    margin-bottom: 0.85rem;
+    padding: 0.95rem;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .comparison-table td {
+    padding: 0.45rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .comparison-table td:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .comparison-table td:first-child {
+    padding-top: 0;
+  }
+
+  .comparison-table td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 0.18rem;
+    color: var(--accent);
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
   button {

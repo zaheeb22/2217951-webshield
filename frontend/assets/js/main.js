@@ -123,7 +123,7 @@ async function loadOverview() {
     setMessage(
       labStatus,
       labData.demoEnabled
-        ? "Demo mode is enabled. Keep those routes limited to local, intentional testing."
+        ? "Demo mode is enabled. Keep those routes limited to local, intentional validation."
         : "Secure mode is active. The vulnerable lab routes stay unavailable until LAB_MODE is set to demo.",
       labData.demoEnabled ? "error" : "success"
     );

@@ -69,7 +69,7 @@ def _serialise_security_scenarios() -> list[dict]:
         {
             "id": "sql_injection",
             "vulnerability": "SQL Injection",
-            "testingTool": "SQLMap or crafted query strings",
+            "reviewMethod": "SQLMap or crafted query strings",
             "demoRoute": "/api/lab/insecure-search",
             "beforeState": "Demo mode builds a SQL query with string concatenation and may expose data or raw errors.",
             "afterState": "Secure mode uses SQLAlchemy ORM queries and validated input on support ticket routes.",
@@ -79,7 +79,7 @@ def _serialise_security_scenarios() -> list[dict]:
         {
             "id": "xss",
             "vulnerability": "Cross-Site Scripting (XSS)",
-            "testingTool": "Manual payload injection and browser rendering checks",
+            "reviewMethod": "Manual payload injection and browser rendering checks",
             "demoRoute": "/api/lab/echo-preview",
             "beforeState": "Demo mode reflects raw HTML back into the page without sanitization.",
             "afterState": "Secure routes reject script-like markup and render user content as text nodes.",
@@ -89,7 +89,7 @@ def _serialise_security_scenarios() -> list[dict]:
         {
             "id": "idor",
             "vulnerability": "Insecure Direct Object Reference (IDOR)",
-            "testingTool": "Manual URL manipulation",
+            "reviewMethod": "Manual URL manipulation",
             "demoRoute": "/api/lab/public-tickets/<id>",
             "beforeState": "Demo mode exposes support tickets without object-level authorization checks.",
             "afterState": "Secure user routes only return tickets belonging to the authenticated user.",
@@ -99,7 +99,7 @@ def _serialise_security_scenarios() -> list[dict]:
         {
             "id": "brute_force",
             "vulnerability": "Brute-force Login Attempts",
-            "testingTool": "Repeated failed login attempts",
+            "reviewMethod": "Repeated failed login attempts",
             "demoRoute": "N/A",
             "beforeState": "Without rate limiting, repeated credential guessing would continue without delay.",
             "afterState": "Secure mode tracks failed attempts and temporarily locks the login route after the configured threshold.",
@@ -109,7 +109,7 @@ def _serialise_security_scenarios() -> list[dict]:
         {
             "id": "csrf",
             "vulnerability": "Cross-Site Request Forgery (CSRF)",
-            "testingTool": "Manual forged POST/PATCH requests without a valid CSRF token",
+            "reviewMethod": "Manual forged POST/PATCH requests without a valid CSRF token",
             "demoRoute": "N/A",
             "beforeState": "Without CSRF tokens, state-changing requests could be replayed by another site.",
             "afterState": "Secure mode requires a valid CSRF token on state-changing API requests.",
@@ -119,7 +119,7 @@ def _serialise_security_scenarios() -> list[dict]:
         {
             "id": "weak_auth",
             "vulnerability": "Weak Authentication / Access Control",
-            "testingTool": "Manual role and account-state testing",
+            "reviewMethod": "Manual role and account-state checks",
             "demoRoute": "N/A",
             "beforeState": "Without role checks and account controls, privileged actions could be abused.",
             "afterState": "Secure mode enforces admin-only routes, account activation state, and password complexity rules.",
@@ -628,7 +628,7 @@ def export_security_report():
     rows = [
         [
             item["vulnerability"],
-            item["testingTool"],
+            item["reviewMethod"],
             item["demoRoute"],
             item["beforeState"],
             item["afterState"],
@@ -641,7 +641,7 @@ def export_security_report():
         "webshield-security-report.csv",
         [
             "vulnerability",
-            "testing_tool",
+            "review_method",
             "demo_route",
             "before_state",
             "after_state",

@@ -387,12 +387,21 @@ function buildAuditCard(item) {
 function renderSecurityTable(items) {
   // Show the backend's secure-vs-demo scenario summary as a comparison table.
   securityTableBody.innerHTML = "";
+  const labels = [
+    "Vulnerability",
+    "Review Method",
+    "Demo Route",
+    "Before Mitigation",
+    "After Mitigation",
+    "Mitigation",
+    "Demo Mode",
+  ];
 
   items.forEach((item) => {
     const row = document.createElement("tr");
     const cells = [
       item.vulnerability,
-      item.testingTool,
+      item.reviewMethod,
       item.demoRoute,
       item.beforeState,
       item.afterState,
@@ -400,8 +409,9 @@ function renderSecurityTable(items) {
       item.demoEnabled ? "enabled" : "disabled",
     ];
 
-    cells.forEach((value) => {
+    cells.forEach((value, index) => {
       const cell = document.createElement("td");
+      cell.dataset.label = labels[index];
       cell.textContent = value;
       row.append(cell);
     });
