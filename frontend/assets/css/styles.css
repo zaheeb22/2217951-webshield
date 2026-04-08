@@ -30,6 +30,7 @@
 body {
   margin: 0;
   min-height: 100vh;
+  overflow-x: hidden;
   color: var(--text);
   font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
   background:
@@ -93,6 +94,20 @@ select {
   gap: 0.75rem;
 }
 
+.nav-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-width: 88px;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
 .nav a,
 .ghost-button,
 .secondary-button {
@@ -104,6 +119,7 @@ select {
 }
 
 .nav a:hover,
+.nav-toggle:hover,
 .ghost-button:hover,
 .secondary-button:hover {
   transform: translateY(-1px);
@@ -120,7 +136,7 @@ select {
 .grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
 }
 
 .full-span {
@@ -505,14 +521,97 @@ button.secondary-button {
 }
 
 @media (max-width: 720px) {
+  .shell,
+  .shell.narrow {
+    width: min(100%, calc(100% - 1rem));
+    padding: 1rem 0 1.5rem;
+  }
+
   .topbar,
   .panel-header {
     flex-direction: column;
   }
 
-  .nav,
+  .topbar {
+    align-items: stretch;
+  }
+
+  .topbar.compact {
+    align-items: stretch;
+  }
+
+  .nav-toggle {
+    display: inline-flex;
+    align-self: flex-start;
+  }
+
+  .nav {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    gap: 0.65rem;
+    padding: 0.9rem;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .nav.is-open,
   .inline-form {
     width: 100%;
+  }
+
+  .nav.is-open {
+    display: flex;
+  }
+
+  .nav a,
+  .nav button,
+  .ghost-button,
+  .secondary-button,
+  .primary-link {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .panel {
+    padding: 1rem;
+    border-radius: 20px;
+  }
+
+  .button-row {
+    width: 100%;
+  }
+
+  .button-row > * {
+    width: 100%;
+  }
+
+  .inline-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .inline-form label {
+    min-width: 0;
+  }
+
+  .admin-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-controls > * {
+    width: 100%;
+  }
+
+  button {
+    width: 100%;
+  }
+
+  .nav-toggle {
+    width: auto;
   }
 
   .info-row {
@@ -920,7 +1019,8 @@ body.home-page::after {
     width: 100%;
   }
 
-  .hero-actions a {
+  .hero-actions a,
+  .hero-actions button {
     width: 100%;
   }
 
