@@ -17,6 +17,7 @@ from ..security import (
     current_user,
     get_login_attempt_snapshot,
     record_audit_event,
+    record_validation_rejection,
 )
 from ..validators import ValidationError, validate_admin_note
 from ..validators import validate_password
@@ -296,6 +297,11 @@ def update_user(user_id: int):
     if "role" in payload:
         new_role = (payload.get("role") or "").strip().lower()
         if new_role not in ALLOWED_ROLES:
+            record_validation_rejection(
+                "Role must be either user or admin.",
+                field_names=["role"],
+            )
+            db.session.commit()
             return api_error(
                 "Role must be either user or admin.",
                 400,
@@ -314,6 +320,11 @@ def update_user(user_id: int):
     if "isActive" in payload:
         is_active = payload.get("isActive")
         if not isinstance(is_active, bool):
+            record_validation_rejection(
+                "isActive must be a boolean value.",
+                field_names=["isActive"],
+            )
+            db.session.commit()
             return api_error(
                 "isActive must be a boolean value.",
                 400,
@@ -391,6 +402,8 @@ def reset_user_password(user_id: int):
     try:
         validated_password = validate_password(new_password)
     except ValidationError as exc:
+        record_validation_rejection(str(exc), field_names=["newPassword"])
+        db.session.commit()
         return api_error(str(exc), 400, code="validation_error")
 
     user.set_password(validated_password)
@@ -448,6 +461,11 @@ def update_ticket_status(ticket_id: int):
     if incoming_status is not None:
         new_status = (incoming_status or "").strip().lower()
         if new_status not in ALLOWED_STATUSES:
+            record_validation_rejection(
+                "Status must be pending, reviewed, or resolved.",
+                field_names=["status"],
+            )
+            db.session.commit()
             return api_error(
                 "Status must be pending, reviewed, or resolved.",
                 400,
@@ -457,6 +475,8 @@ def update_ticket_status(ticket_id: int):
     try:
         admin_note = validate_admin_note(payload.get("adminNote") or "")
     except ValidationError as exc:
+        record_validation_rejection(str(exc), field_names=["adminNote"])
+        db.session.commit()
         return api_error(str(exc), 400, code="validation_error")
 
     previous_status = ticket_item.status
@@ -582,6 +602,11 @@ def reset_login_attempts():
         clear_login_failures(identifier)
         detail = f"Reset login attempts for {identifier}."
     else:
+        record_validation_rejection(
+            "Provide either an identifier or scope=all.",
+            field_names=["identifier", "scope"],
+        )
+        db.session.commit()
         return api_error(
             "Provide either an identifier or scope=all.",
             400,

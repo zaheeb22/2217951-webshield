@@ -16,7 +16,12 @@ from .config import Config
 from .extensions import cors, db
 from .models import AuditLog, Feedback as SupportTicket, FeedbackStatusHistory as SupportTicketStatusHistory, User
 from .routes import admin_bp, auth_bp, lab_bp, tickets_bp
-from .security import api_error, ensure_csrf_token, validate_csrf_request
+from .security import (
+    api_error,
+    ensure_csrf_token,
+    record_validation_rejection,
+    validate_csrf_request,
+)
 from .validators import ValidationError, validate_password
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -155,6 +160,8 @@ def _register_hooks(app: Flask) -> None:
     @app.errorhandler(ValidationError)
     def handle_validation_error(error):
         if request.path.startswith("/api/"):
+            record_validation_rejection(str(error))
+            db.session.commit()
             return api_error(str(error), 400, code="validation_error")
         return str(error), 400
 
@@ -201,7 +208,12 @@ def _register_blueprints(app: Flask) -> None:
     def serve_frontend(page_name: str):
         if page_name.startswith("api/"):
             abort(404)
-        if page_name in {"admin.html", "audit.html"}:
+        if page_name in {
+            "admin.html",
+            "admin-users.html",
+            "admin-moderation.html",
+            "audit.html",
+        }:
             if g.current_user is None or g.current_user.role != "admin":
                 abort(404)
         if page_name == "lab.html" and app.config["LAB_MODE"].lower() != "demo":

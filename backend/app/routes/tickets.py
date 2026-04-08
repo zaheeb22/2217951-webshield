@@ -5,7 +5,13 @@ from flask import Blueprint, jsonify, request
 from ..extensions import db
 from ..models import Feedback as SupportTicket
 from ..models import FeedbackStatusHistory as SupportTicketStatusHistory
-from ..security import api_error, current_user, login_required, record_audit_event
+from ..security import (
+    api_error,
+    current_user,
+    login_required,
+    record_audit_event,
+    record_validation_rejection,
+)
 from ..validators import ValidationError, validate_ticket_message, validate_ticket_title
 
 # These routes belong to normal signed-in users rather than administrators.
@@ -38,6 +44,8 @@ def create_ticket():
         title = validate_ticket_title(payload.get("title") or "")
         message = validate_ticket_message(payload.get("message") or "")
     except ValidationError as exc:
+        record_validation_rejection(str(exc), field_names=["title", "message"])
+        db.session.commit()
         return api_error(str(exc), 400, code="validation_error")
 
     ticket_item = SupportTicket(

@@ -16,6 +16,7 @@ from ..security import (
     login_rate_limit_key,
     login_required,
     record_audit_event,
+    record_validation_rejection,
     register_failed_login,
     rotate_csrf_token,
 )
@@ -50,6 +51,8 @@ def register():
         email = validate_email(payload.get("email") or "")
         password = validate_password(payload.get("password") or "")
     except ValidationError as exc:
+        record_validation_rejection(str(exc), field_names=["username", "email", "password"])
+        db.session.commit()
         return api_error(str(exc), 400, code="validation_error")
 
     existing_user = User.query.filter(
@@ -229,6 +232,8 @@ def change_password():
     try:
         validated_password = validate_password(new_password)
     except ValidationError as exc:
+        record_validation_rejection(str(exc), field_names=["newPassword"])
+        db.session.commit()
         return api_error(str(exc), 400, code="validation_error")
 
     user.set_password(validated_password)

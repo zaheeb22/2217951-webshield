@@ -248,6 +248,29 @@ def admin_required(view):
     return wrapped_view
 
 
+def record_validation_rejection(
+    reason: str,
+    field_names: list[str] | None = None,
+) -> None:
+    """Audit blocked invalid input without storing the raw submitted payload."""
+    user = current_user()
+    if user is None:
+        return
+
+    detail = f"Blocked invalid input on {request.method} {request.path}"
+    if field_names:
+        detail += f" for {', '.join(field_names)}"
+    if reason:
+        detail += f": {reason}"
+
+    record_audit_event(
+        action="input_validation_blocked",
+        target_type="request",
+        detail=detail,
+        actor_id=user.id,
+    )
+
+
 def record_audit_event(
     action: str,
     target_type: str,
