@@ -4,6 +4,7 @@ import json
 import os
 import tempfile
 import unittest
+from datetime import timedelta
 from pathlib import Path
 
 from backend.app import create_app
@@ -26,6 +27,7 @@ class AuthSecurityTestCase(unittest.TestCase):
             "LAB_MODE",
             "FRONTEND_ORIGINS",
             "ERROR_LOG_PATH",
+            "PERMANENT_SESSION_MINUTES",
             "LOGIN_RATE_LIMIT_ATTEMPTS",
             "LOGIN_RATE_LIMIT_WINDOW_SECONDS",
             "LOGIN_RATE_LIMIT_LOCKOUT_SECONDS",
@@ -38,6 +40,7 @@ class AuthSecurityTestCase(unittest.TestCase):
         os.environ["LAB_MODE"] = "secure"
         os.environ["FRONTEND_ORIGINS"] = "http://127.0.0.1:5000"
         os.environ["ERROR_LOG_PATH"] = str(Path(self.temp_dir.name) / "error.log")
+        os.environ.pop("PERMANENT_SESSION_MINUTES", None)
         os.environ["LOGIN_RATE_LIMIT_ATTEMPTS"] = "5"
         os.environ["LOGIN_RATE_LIMIT_WINDOW_SECONDS"] = "600"
         os.environ["LOGIN_RATE_LIMIT_LOCKOUT_SECONDS"] = "300"
@@ -52,7 +55,7 @@ class AuthSecurityTestCase(unittest.TestCase):
             # The seeded admin account gives the tests a real user to log in with.
             admin = User(
                 username="admin",
-                email="admin@example.com",
+                email="admin@gmail.com",
                 role="admin",
                 is_active=True,
             )
@@ -93,7 +96,7 @@ class AuthSecurityTestCase(unittest.TestCase):
         login_response = self.post_json(
             "/api/auth/login",
             {
-                "email": "admin@example.com",
+                "email": "admin@gmail.com",
                 "password": "StrongPass123",
             },
         )
@@ -108,13 +111,21 @@ class AuthSecurityTestCase(unittest.TestCase):
         self.assertEqual(session_data["user"]["username"], "admin")
         self.assertEqual(session_data["user"]["role"], "admin")
 
+    def test_default_session_timeout_is_ten_minutes_of_inactivity(self):
+        """Permanent sessions should expire after 10 minutes unless config overrides it."""
+        self.assertEqual(
+            self.app.config["PERMANENT_SESSION_LIFETIME"],
+            timedelta(minutes=10),
+        )
+        self.assertTrue(self.app.config["SESSION_REFRESH_EACH_REQUEST"])
+
     def test_login_is_locked_after_configured_failed_attempts(self):
         """Repeated bad passwords should trigger the configured rate-limit lockout."""
         for _ in range(4):
             failed_response = self.post_json(
                 "/api/auth/login",
                 {
-                    "email": "admin@example.com",
+                    "email": "admin@gmail.com",
                     "password": "WrongPassword123",
                 },
             )
@@ -123,7 +134,7 @@ class AuthSecurityTestCase(unittest.TestCase):
         locked_response = self.post_json(
             "/api/auth/login",
             {
-                "email": "admin@example.com",
+                "email": "admin@gmail.com",
                 "password": "WrongPassword123",
             },
         )

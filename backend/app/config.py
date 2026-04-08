@@ -55,7 +55,7 @@ class Config:
     SESSION_COOKIE_SAMESITE = "Lax"
     SESSION_COOKIE_SECURE = _is_vercel_environment()
     SESSION_REFRESH_EACH_REQUEST = True
-    PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)
+    PERMANENT_SESSION_LIFETIME = timedelta(minutes=10)
     JSON_SORT_KEYS = False
     AUTO_CREATE_TABLES = not _is_vercel_environment()
     LAB_MODE = "secure"
